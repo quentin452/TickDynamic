@@ -23,10 +23,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fml.common.DummyModContainer;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.LoadController;
-import net.minecraftforge.fml.common.ModMetadata;
+import net.minecraftforge.fml.common.*;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
@@ -44,10 +41,11 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
  * - Entities and TileEntities grouped by owner(Player), and limits can be set per player.
  */
 
-public class TickDynamicMod extends DummyModContainer
+@Mod(modid=TickDynamicMod.MODID, name="Tick Dynamic", version = TickDynamicMod.VERSION)
+public class TickDynamicMod
 {
     public static final String MODID = "tickdynamic";
-    public static final String VERSION = "1.0.0";
+    public static final String VERSION = "${version}";
     public static boolean debug = false;
     public static boolean debugGroups = false;
     public static boolean debugTimer = false;
@@ -80,32 +78,28 @@ public class TickDynamicMod extends DummyModContainer
     public int defaultWorldSlicesMax = 100;
     public int defaultAverageTicks = 20;
     
-    public TickDynamicMod() {
-    	super(new ModMetadata());
-    	ModMetadata meta = getMetadata();
-    	meta.version = VERSION;
-    	meta.modId = MODID;
-    	meta.name = "Tick Dynamic";
-    	meta.description = "Dynamic control of the world tickrate to reduce apparent lag.";
-    	meta.authorList.add("Wildex999 ( wildex999@gmail.com )");
-    	meta.authorList.add("The_Fireplace");
-    	meta.updateUrl = "http://mods.stjerncraft.com/tickdynamic";
-    	meta.url = "http://mods.stjerncraft.com/tickdynamic";
-    	
-    	tickDynamic = this;
-    	tpsMutex = new Semaphore(1);
-    	tpsTimer = new Timer();
-    	tpsList = new LinkedList<Integer>();
-    }
-    
-    @Override
+    //@Override
     public boolean registerBus(EventBus bus, LoadController controller) {
     	bus.register(this);
     	return true;
     }
-    
-    @Subscribe
+
+    @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+	    ModMetadata meta = event.getModMetadata();
+	    meta.version = VERSION;
+	    meta.modId = MODID;
+	    meta.name = "Tick Dynamic";
+	    meta.description = "Dynamic control of the world tickrate to reduce apparent lag.";
+	    meta.authorList.add("Wildex999 ( wildex999@gmail.com )");
+	    meta.authorList.add("The_Fireplace");
+	    meta.updateUrl = "http://mods.stjerncraft.com/tickdynamic";
+	    meta.url = "http://mods.stjerncraft.com/tickdynamic";
+
+	    tickDynamic = this;
+	    tpsMutex = new Semaphore(1);
+	    tpsTimer = new Timer();
+	    tpsList = new LinkedList<Integer>();
     	config = new Configuration(event.getSuggestedConfigurationFile());
     }
     
@@ -124,8 +118,8 @@ public class TickDynamicMod extends DummyModContainer
     public void queueSaveConfig() {
     	saveConfig = true;
     }
-    
-    @Subscribe
+
+	@Mod.EventHandler
     public void init(FMLInitializationEvent event) {
     	MinecraftForge.EVENT_BUS.register(this);
     	timedObjects = new HashMap<String, ITimed>();
@@ -150,9 +144,9 @@ public class TickDynamicMod extends DummyModContainer
     	eventHandler = new WorldEventHandler(this);
     	MinecraftForge.EVENT_BUS.register(eventHandler);
     }
-    
-    
-    @Subscribe
+
+
+	@Mod.EventHandler
     public void serverStart(FMLServerStartingEvent event) {
     	event.registerServerCommand(new CommandHandler(this));
     	
@@ -160,8 +154,8 @@ public class TickDynamicMod extends DummyModContainer
 
     	server = event.getServer();
     }
-    
-    @Subscribe
+
+	@Mod.EventHandler
     public void serverStop(FMLServerStoppingEvent event) {
     	tpsTimer.cancel();
     	server = null;
@@ -407,6 +401,4 @@ public class TickDynamicMod extends DummyModContainer
     	EntityGroup eGroup = getWorldEntityGroup(world, "entity", EntityType.Entity, true, true);
     	return eGroup;
     }
-    
-
 }
