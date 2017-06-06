@@ -1,19 +1,18 @@
 package com.wildex999.tickdynamic.commands;
 
-import java.util.List;
-
 import com.wildex999.tickdynamic.TickDynamicMod;
-
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 
+import java.util.List;
+
 public class CommandReload implements ICommand {
 
 	private TickDynamicMod mod;
-	
+
 	public CommandReload(TickDynamicMod mod) {
 		this.mod = mod;
 	}
@@ -55,7 +54,7 @@ public class CommandReload implements ICommand {
 	public boolean isUsernameIndex(String[] p_82358_1_, int p_82358_2_) {
 		return false;
 	}
-	
+
 	@Override
 	public int compareTo(ICommand o) {
 		return 0;

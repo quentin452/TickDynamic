@@ -12,7 +12,9 @@ public class ValueType {
 		TChar,
 		TString,
 		TType
-	};
+	}
+
+	;
 	public Type type;
 	public Object value;
 }

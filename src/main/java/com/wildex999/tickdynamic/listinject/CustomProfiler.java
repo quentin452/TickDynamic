@@ -21,14 +21,14 @@ public class CustomProfiler extends Profiler {
 		InTick, //We are currently ticking a single entity
 		InRemove //Removing dead Entity
 	}
-	
+
 	public final Profiler original;
 	public Stage stage;
 	public boolean reachedTile; //Set to true when starting to tick TileEntities
-	
-	
+
+
 	private int depthCount; //start and end can be called inside Entity tick, we have to track it
-	
+
 	public CustomProfiler(Profiler originalProfiler) {
 		this.original = originalProfiler;
 		this.stage = Stage.None;
@@ -40,63 +40,62 @@ public class CustomProfiler extends Profiler {
 		//System.out.println("Stage change: " + this.stage + " -> " + stage);
 		this.stage = stage;
 	}
-	
-	@Override
-    public void startSection(String sectionName)
-    {
 
-		switch(stage) {
-		case None:
-			break;
-			
-		case BeforeLoop:
-			if(sectionName.equals("regular"))
-				setStage(Stage.InLoop);
-			break;
-			
-		case InLoop:
-			if(sectionName.equals("tick")) {
-				setStage(Stage.InTick);
-				depthCount = 0;
-			} else if(sectionName.equals("remove")) {
-				setStage(Stage.InRemove);
-				depthCount = 0;
-			} else if(sectionName.equals("blockEntities")) {
-				setStage(Stage.None); //Done ticking Entities
-				reachedTile = true;
-			}
-			break;
-			
-		case InTick:
-			//Sometimes the InTick isn't correctly closed, allow some leeway here
-			if(depthCount <= 1 && sectionName.equals("remove")) {
-				setStage(Stage.InRemove);
-				depthCount = 0;
+	@Override
+	public void startSection(String sectionName) {
+
+		switch (stage) {
+			case None:
 				break;
-			}
-		case InRemove:
-			depthCount++;
-			break;
+
+			case BeforeLoop:
+				if (sectionName.equals("regular"))
+					setStage(Stage.InLoop);
+				break;
+
+			case InLoop:
+				if (sectionName.equals("tick")) {
+					setStage(Stage.InTick);
+					depthCount = 0;
+				} else if (sectionName.equals("remove")) {
+					setStage(Stage.InRemove);
+					depthCount = 0;
+				} else if (sectionName.equals("blockEntities")) {
+					setStage(Stage.None); //Done ticking Entities
+					reachedTile = true;
+				}
+				break;
+
+			case InTick:
+				//Sometimes the InTick isn't correctly closed, allow some leeway here
+				if (depthCount <= 1 && sectionName.equals("remove")) {
+					setStage(Stage.InRemove);
+					depthCount = 0;
+					break;
+				}
+			case InRemove:
+				depthCount++;
+				break;
 		}
-		
+
 		original.startSection(sectionName);
-    }
-	
+	}
+
 	@Override
 	public void endSection() {
-		switch(stage) {
-		case InTick:
-			if(depthCount-- <= 0)
-				setStage(Stage.InLoop);
-			break;
-		case InRemove:
-			if(depthCount-- <= 0)
-				setStage(Stage.InLoop);
-			break;
-		default:
-			break;
+		switch (stage) {
+			case InTick:
+				if (depthCount-- <= 0)
+					setStage(Stage.InLoop);
+				break;
+			case InRemove:
+				if (depthCount-- <= 0)
+					setStage(Stage.InLoop);
+				break;
+			default:
+				break;
 		}
 		original.endSection();
 	}
-	
+
 }

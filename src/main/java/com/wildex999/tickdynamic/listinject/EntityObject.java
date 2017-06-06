@@ -14,18 +14,17 @@ public class EntityObject {
 
 	//Initialize the EntityObject, usually called when added to an Entity List.
 	public void TD_Init(EntityGroup group) {
-		if(!TD_selfInit)
-		{
+		if (!TD_selfInit) {
 			Object self = this;
-			if(self instanceof Entity)
+			if (self instanceof Entity)
 				TD_selfEntity = (Entity) self;
-			else if(self instanceof TileEntity)
+			else if (self instanceof TileEntity)
 				TD_selfTileEntity = (TileEntity) self;
 			TD_selfInit = true;
 		}
 		TD_entityGroup = group;
 	}
-	
+
 	//Called when EntityObject is removed from an Entity list.
 	public void TD_Deinit() {
 		TD_entityGroup = null;

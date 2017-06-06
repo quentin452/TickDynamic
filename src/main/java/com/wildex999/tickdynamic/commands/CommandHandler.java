@@ -1,16 +1,7 @@
 package com.wildex999.tickdynamic.commands;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 import com.mojang.realmsclient.gui.ChatFormatting;
 import com.wildex999.tickdynamic.TickDynamicMod;
-
-import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
@@ -18,13 +9,16 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 
+import java.text.DecimalFormat;
+import java.util.*;
+
 public class CommandHandler implements ICommand {
 
 	private List<String> aliases;
 	private Map<String, ICommand> subCommandHandlers;
 	private String listSubCommands;
 	private TickDynamicMod mod;
-	
+
 	public enum SubCommands {
 		tps,
 		listworlds,
@@ -35,27 +29,27 @@ public class CommandHandler implements ICommand {
 		enabled,
 		help
 	}
-	
+
 	public CommandHandler(TickDynamicMod mod) {
 		this.mod = mod;
-		
+
 		aliases = new ArrayList<String>();
 		aliases.add("tickdynamic");
 		aliases.add("td");
-		
+
 		subCommandHandlers = new HashMap<String, ICommand>();
 		subCommandHandlers.put("reload", new CommandReload(mod));
 		subCommandHandlers.put("reloadgroups", new CommandReloadGroups(mod));
 		subCommandHandlers.put("listworlds", new CommandListWorlds(mod));
 		subCommandHandlers.put("world", new CommandWorld(mod));
 		subCommandHandlers.put("enabled", new CommandEnabled(mod));
-		
+
 		StringBuilder builderSubCommands = new StringBuilder();
 		SubCommands[] subs = SubCommands.values();
-		for(SubCommands command : subs) {
+		for (SubCommands command : subs) {
 			builderSubCommands.append(command).append(", ");
 		}
-		builderSubCommands.delete(builderSubCommands.length()-2, builderSubCommands.length());
+		builderSubCommands.delete(builderSubCommands.length() - 2, builderSubCommands.length());
 		listSubCommands = builderSubCommands.toString();
 	}
 
@@ -76,29 +70,26 @@ public class CommandHandler implements ICommand {
 
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-		if(args.length == 0)
-		{
+		if (args.length == 0) {
 			sender.sendMessage(new TextComponentString("Usage: " + getUsage(sender)));
 			return;
 		}
-		
-		if(args[0].equals("tps"))
-		{
-			
+
+		if (args[0].equals("tps")) {
+
 			sender.sendMessage(new TextComponentString("Average TPS: " + getTPSFormatted(mod) + " TPS"));
 			return;
-		} else if(args[0].equals("identify")) {
+		} else if (args[0].equals("identify")) {
 			sender.sendMessage(new TextComponentString("Command not yet implemented! This will allow you to check what group a Tile or Entity belongs to by right clicking it.(And other info, like TPS)"));
 			return;
-		} else if(args[0].equals("help")) {
+		} else if (args[0].equals("help")) {
 			sender.sendMessage(new TextComponentString("You can find the documentation over at http://mods.stjerncraft.com/tickdynamic"));
 			return;
 		}
-		
+
 		//Send it over to subCommand handler
 		ICommand subHandler = subCommandHandlers.get(args[0]);
-		if(subHandler == null)
-		{
+		if (subHandler == null) {
 			sender.sendMessage(new TextComponentString(ChatFormatting.RED + "No handler for the command " + ChatFormatting.ITALIC + args[0]));
 			return;
 		}
@@ -113,24 +104,20 @@ public class CommandHandler implements ICommand {
 
 	@Override
 	public List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
-		if(args.length == 1)
-		{
+		if (args.length == 1) {
 			List listOut = new LinkedList();
-			String lastArg = args[args.length-1];
+			String lastArg = args[args.length - 1];
 			SubCommands[] subCommands = SubCommands.values();
-			for(SubCommands command : subCommands)
-			{
-				if(command.toString().contains(lastArg))
+			for (SubCommands command : subCommands) {
+				if (command.toString().contains(lastArg))
 					listOut.add(command.toString());
 			}
-			
+
 			return listOut;
-		}
-		else
-		{
+		} else {
 			//Send it over to subCommand handler
 			ICommand subHandler = subCommandHandlers.get(args[0]);
-			if(subHandler == null)
+			if (subHandler == null)
 				return null;
 			return subHandler.getTabCompletions(server, sender, args, pos);
 		}
@@ -141,23 +128,23 @@ public class CommandHandler implements ICommand {
 		//TODO: Pass on to subCommand
 		return false;
 	}
-	
+
 	@Override
 	public int compareTo(ICommand o) {
 		return 0;
 	}
-	
+
 	public static String getTPSFormatted(TickDynamicMod mod) {
 		String tpsOut;
 		String color;
-		
-		if(mod.averageTPS >= 19)
+
+		if (mod.averageTPS >= 19)
 			color = ChatFormatting.GREEN.toString();
-		else if(mod.averageTPS > 10)
+		else if (mod.averageTPS > 10)
 			color = ChatFormatting.YELLOW.toString();
 		else
 			color = ChatFormatting.RED.toString();
-		
+
 		DecimalFormat tpsFormat = new DecimalFormat("#.00");
 		tpsOut = color + tpsFormat.format(mod.averageTPS) + ChatFormatting.RESET;
 		return tpsOut;
