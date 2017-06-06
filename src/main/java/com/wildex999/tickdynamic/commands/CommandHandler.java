@@ -7,16 +7,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.mojang.realmsclient.gui.ChatFormatting;
 import com.wildex999.tickdynamic.TickDynamicMod;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatStyle;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IChatComponent;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
 
 public class CommandHandler implements ICommand {
 
@@ -60,38 +60,38 @@ public class CommandHandler implements ICommand {
 	}
 
 	@Override
-	public String getCommandName() {
+	public String getName() {
 		return "tickdynamic";
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender sender) {
+	public String getUsage(ICommandSender sender) {
 		return "tickdynamic [" + listSubCommands + "]";
 	}
 
 	@Override
-	public List getCommandAliases() {
+	public List getAliases() {
 		return aliases;
 	}
 
 	@Override
-	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 		if(args.length == 0)
 		{
-			sender.addChatMessage(new ChatComponentText("Usage: " + getCommandUsage(sender)));
+			sender.sendMessage(new TextComponentString("Usage: " + getUsage(sender)));
 			return;
 		}
 		
 		if(args[0].equals("tps"))
 		{
 			
-			sender.addChatMessage(new ChatComponentText("Average TPS: " + getTPSFormatted(mod) + " TPS"));
+			sender.sendMessage(new TextComponentString("Average TPS: " + getTPSFormatted(mod) + " TPS"));
 			return;
 		} else if(args[0].equals("identify")) {
-			sender.addChatMessage(new ChatComponentText("Command not yet implemented! This will allow you to check what group a Tile or Entity belongs to by right clicking it.(And other info, like TPS)"));
+			sender.sendMessage(new TextComponentString("Command not yet implemented! This will allow you to check what group a Tile or Entity belongs to by right clicking it.(And other info, like TPS)"));
 			return;
 		} else if(args[0].equals("help")) {
-			sender.addChatMessage(new ChatComponentText("You can find the documentation over at http://mods.stjerncraft.com/tickdynamic"));
+			sender.sendMessage(new TextComponentString("You can find the documentation over at http://mods.stjerncraft.com/tickdynamic"));
 			return;
 		}
 		
@@ -99,20 +99,20 @@ public class CommandHandler implements ICommand {
 		ICommand subHandler = subCommandHandlers.get(args[0]);
 		if(subHandler == null)
 		{
-			sender.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + "No handler for the command " + EnumChatFormatting.ITALIC + args[0]));
+			sender.sendMessage(new TextComponentString(ChatFormatting.RED + "No handler for the command " + ChatFormatting.ITALIC + args[0]));
 			return;
 		}
-		subHandler.processCommand(sender, args);
+		subHandler.execute(server, sender, args);
 	}
 
 
 	@Override
-	public boolean canCommandSenderUseCommand(ICommandSender sender) {
-		return sender.canCommandSenderUseCommand(1, getCommandName());
+	public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
+		return sender.canUseCommand(1, getName());
 	}
 
 	@Override
-	public List addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
+	public List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 		if(args.length == 1)
 		{
 			List listOut = new LinkedList();
@@ -132,7 +132,7 @@ public class CommandHandler implements ICommand {
 			ICommand subHandler = subCommandHandlers.get(args[0]);
 			if(subHandler == null)
 				return null;
-			return subHandler.addTabCompletionOptions(sender, args, pos);
+			return subHandler.getTabCompletions(server, sender, args, pos);
 		}
 	}
 
@@ -152,14 +152,14 @@ public class CommandHandler implements ICommand {
 		String color;
 		
 		if(mod.averageTPS >= 19)
-			color = EnumChatFormatting.GREEN.toString();
+			color = ChatFormatting.GREEN.toString();
 		else if(mod.averageTPS > 10)
-			color = EnumChatFormatting.YELLOW.toString();
+			color = ChatFormatting.YELLOW.toString();
 		else
-			color = EnumChatFormatting.RED.toString();
+			color = ChatFormatting.RED.toString();
 		
 		DecimalFormat tpsFormat = new DecimalFormat("#.00");
-		tpsOut = color + tpsFormat.format(mod.averageTPS) + EnumChatFormatting.RESET;
+		tpsOut = color + tpsFormat.format(mod.averageTPS) + ChatFormatting.RESET;
 		return tpsOut;
 	}
 

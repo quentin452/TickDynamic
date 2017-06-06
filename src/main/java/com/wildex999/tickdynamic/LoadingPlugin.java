@@ -13,7 +13,7 @@ import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin.SortingIndex;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin.TransformerExclusions;
 
 @SortingIndex(1009) //Run after deobfuscation, and try to run after most other coremods
-@MCVersion("1.8.9")
+@MCVersion("1.11.2")
 @DependsOn("forge")
 @TransformerExclusions({ "com.wildex999", })
 public class LoadingPlugin implements IFMLLoadingPlugin {
@@ -22,7 +22,7 @@ public class LoadingPlugin implements IFMLLoadingPlugin {
 	public String[] getASMTransformerClass() {
 		boolean developmentEnvironment = (Boolean)Launch.blackboard.get("fml.deobfuscatedEnvironment");
 		
-		//Only return the patcher if running in live environment, to allow for testing when running from eclipse
+		//Only return the patcher if running in live environment, to allow for testing when running from eclipse/idea
 		if(!developmentEnvironment)
 			return new String[] { TransformerPatcher.class.getName(), EntityInjector.class.getName() };
 		else

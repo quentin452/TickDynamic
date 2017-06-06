@@ -4,10 +4,10 @@
   "name": "Tick Dynamic ",
   "description": "",
   "version": "${version}",
-  "mcversion": "${mcversion}",
+  "mcversion": "1.11.2",
   "url": "",
   "updateUrl": "",
-  "authorList": ["Wildex999"],
+  "authorList": ["The_Fireplace","Wildex999"],
   "logoFile": "",
   "screenshots": [],
   "dependencies": []

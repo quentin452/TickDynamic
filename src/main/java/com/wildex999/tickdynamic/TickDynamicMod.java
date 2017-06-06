@@ -46,8 +46,8 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
 
 public class TickDynamicMod extends DummyModContainer
 {
-    public static final String MODID = "tickDynamic";
-    public static final String VERSION = "0.2.0-dev4";
+    public static final String MODID = "tickdynamic";
+    public static final String VERSION = "1.0.0";
     public static boolean debug = false;
     public static boolean debugGroups = false;
     public static boolean debugTimer = false;
@@ -61,9 +61,6 @@ public class TickDynamicMod extends DummyModContainer
     public MinecraftServer server;
     public WorldEventHandler eventHandler;
     
-    VersionChecker versionChecker;
-    public boolean versionCheckDone;
-    
     public Semaphore tpsMutex;
     public Timer tpsTimer;
     public int tickCounter;
@@ -74,9 +71,7 @@ public class TickDynamicMod extends DummyModContainer
     //Config
     public Configuration config;
     public boolean saveConfig;
-    
-    public static final String configCategoryDefaultEntities = "groups.entity";
-    public static final String configCategoryDefaultTileEntities = "groups.tileentity";
+
     public int defaultTickTime = 50;
     public int defaultEntitySlicesMax = 100;
     public int defaultEntityMinimumObjects = 100;
@@ -93,6 +88,7 @@ public class TickDynamicMod extends DummyModContainer
     	meta.name = "Tick Dynamic";
     	meta.description = "Dynamic control of the world tickrate to reduce apparent lag.";
     	meta.authorList.add("Wildex999 ( wildex999@gmail.com )");
+    	meta.authorList.add("The_Fireplace");
     	meta.updateUrl = "http://mods.stjerncraft.com/tickdynamic";
     	meta.url = "http://mods.stjerncraft.com/tickdynamic";
     	
@@ -100,7 +96,6 @@ public class TickDynamicMod extends DummyModContainer
     	tpsMutex = new Semaphore(1);
     	tpsTimer = new Timer();
     	tpsList = new LinkedList<Integer>();
-    	versionChecker = new VersionChecker();
     }
     
     @Override
@@ -132,7 +127,7 @@ public class TickDynamicMod extends DummyModContainer
     
     @Subscribe
     public void init(FMLInitializationEvent event) {
-    	FMLCommonHandler.instance().bus().register(this);
+    	MinecraftForge.EVENT_BUS.register(this);
     	timedObjects = new HashMap<String, ITimed>();
     	entityGroups = new HashMap<String, EntityGroup>();
     	
@@ -154,7 +149,6 @@ public class TickDynamicMod extends DummyModContainer
     	
     	eventHandler = new WorldEventHandler(this);
     	MinecraftForge.EVENT_BUS.register(eventHandler);
-    	FMLCommonHandler.instance().bus().register(eventHandler);
     }
     
     
@@ -163,10 +157,7 @@ public class TickDynamicMod extends DummyModContainer
     	event.registerServerCommand(new CommandHandler(this));
     	
     	tpsTimer.schedule(new TimerTickTask(this), 1000, 1000);
-    	versionCheckDone = false;
-    	versionChecker.runVersionCheck();
-    	
-    	
+
     	server = event.getServer();
     }
     
@@ -180,22 +171,6 @@ public class TickDynamicMod extends DummyModContainer
     public void tickEventStart(ServerTickEvent event) {
     	if(event.phase == Phase.START)
     	{
-    		if(!versionCheckDone)
-    		{
-    			VersionChecker.VersionData versionData = versionChecker.getVersionData();
-    			if(versionData != null)
-    			{
-    				versionCheckDone = true;
-    				if(versionData.checkOk)
-    				{
-	    				//TODO: Parse versions, split at ',', then split version numbers at '.'
-	    				System.out.println("TickDynamic version check: Latest version = " + versionData.modVersion + ". Download URL: http://" + versionData.updateUrl);
-    				}
-    				else
-    					System.out.println("TickDynamic version check: Error while checking latest version!");
-    			}
-    		}
-    		
     		TimedGroup externalGroup = getTimedGroup("external");
     		externalGroup.endTimer();
     		
@@ -291,7 +266,7 @@ public class TickDynamicMod extends DummyModContainer
     	String remote = "";
     	if(world.isRemote)
     		remote = "client_";
-    	StringBuilder strBuilder = new StringBuilder().append("worlds.").append(remote).append("dim").append(world.provider.getDimensionId());
+    	StringBuilder strBuilder = new StringBuilder().append("worlds.").append(remote).append("dim").append(world.provider.getDimension());
     	if(name != null && name.length() > 0)
     		strBuilder.append(".").append(name);
 
@@ -311,7 +286,7 @@ public class TickDynamicMod extends DummyModContainer
     		if(world.isRemote)
     			worldManager.setSliceMax(0);
     		
-    		config.setCategoryComment(managerName, world.provider.getDimensionName());
+    		config.setCategoryComment(managerName, world.provider.getDimensionType().getName());
 
     		root.addChild(worldManager);
     	}
@@ -371,7 +346,7 @@ public class TickDynamicMod extends DummyModContainer
     		offsetCount += 7;
     	}
     	
-    	String groupNamePrefix = new StringBuilder().append(world.provider.getDimensionId()).append(".").toString();
+    	String groupNamePrefix = new StringBuilder().append(world.provider.getDimension()).append(".").toString();
     	//TODO: Don't compare the first 10 characters, as they are always the same(Have offset)
     	for(Map.Entry<String, EntityGroup> entry : entityGroups.entrySet()) {
     		String groupName = entry.getKey();
@@ -399,7 +374,7 @@ public class TickDynamicMod extends DummyModContainer
     		}
     		String groupName = getEntityGroupName(group.getWorld(), group.getName());
     		if(!entityGroups.remove(groupName, group)) {
-    			System.err.println("Failed to unload EntityGroup: " + groupName + " for world: " + world.provider.getDimensionName());
+    			System.err.println("Failed to unload EntityGroup: " + groupName + " for world: " + world.provider.getDimensionType().getName());
     			System.err.println("This might cause the world to remain in memory!"); 
     		}
     		else
@@ -408,11 +383,11 @@ public class TickDynamicMod extends DummyModContainer
     	}
     	
     	if(debug)
-    		System.out.println("Unloaded " + groupCount + " EntityGroups while unloading world: " + world.provider.getDimensionName());
+    		System.out.println("Unloaded " + groupCount + " EntityGroups while unloading world: " + world.provider.getDimensionType().getName());
     }
     
     public String getWorldPrefix(World world) {
-    	return "worlds.dim" + world.provider.getDimensionId();
+    	return "worlds.dim" + world.provider.getDimension();
     }
     
     public ConfigCategory getWorldConfigCategory(World world) {

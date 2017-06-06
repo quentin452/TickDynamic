@@ -100,7 +100,7 @@ public class TickDynamicConfig {
 			WorldServer[] worlds = DimensionManager.getWorlds();
 			for(WorldServer world : worlds) {
 				if(mod.debug)
-					System.out.println("Reloading " + world.provider.getDimensionName());
+					System.out.println("Reloading " + world.provider.getDimensionType().getName());
 
 				if(world.loadedEntityList instanceof ListManager) {
 					ListManager entityList = (ListManager)world.loadedEntityList;

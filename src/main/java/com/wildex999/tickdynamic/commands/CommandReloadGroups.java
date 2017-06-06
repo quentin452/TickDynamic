@@ -6,9 +6,9 @@ import com.wildex999.tickdynamic.TickDynamicMod;
 
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
 
 public class CommandReloadGroups implements ICommand {
 
@@ -19,35 +19,35 @@ public class CommandReloadGroups implements ICommand {
 	}
 
 	@Override
-	public String getCommandName() {
+	public String getName() {
 		return "tickdynamic reloadgroups";
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender p_71518_1_) {
+	public String getUsage(ICommandSender p_71518_1_) {
 		return "tickdynamic reloadgroups";
 	}
 
 	@Override
-	public List getCommandAliases() {
+	public List getAliases() {
 		return null;
 	}
 
 	@Override
-	public void processCommand(ICommandSender sender, String[] args) {
-		sender.addChatMessage(new ChatComponentText("Reloading Groups configuration..."));
-		sender.addChatMessage(new ChatComponentText("Note: Moving of (tile)entities to new groups might cause lag!!!"));
+	public void execute(MinecraftServer server,  ICommandSender sender, String[] args) {
+		sender.sendMessage(new TextComponentString("Reloading Groups configuration..."));
+		sender.sendMessage(new TextComponentString("Note: Moving of (tile)entities to new groups might cause lag!!!"));
 		mod.loadConfig(true);
-		sender.addChatMessage(new ChatComponentText("Reload and moving complete!"));
+		sender.sendMessage(new TextComponentString("Reload and moving complete!"));
 	}
 
 	@Override
-	public boolean canCommandSenderUseCommand(ICommandSender sender) {
-		return sender.canCommandSenderUseCommand(1, getCommandName());
+	public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
+		return sender.canUseCommand(1, getName());
 	}
 
 	@Override
-	public List addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
+	public List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 		return null;
 	}
 

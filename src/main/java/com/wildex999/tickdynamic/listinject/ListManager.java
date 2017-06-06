@@ -46,7 +46,7 @@ public class ListManager<T extends EntityObject> implements List<T> {
 	
 	public ListManager(World world, TickDynamicMod mod, EntityType type) {
 		this.world = world;
-		this.customProfiler = (CustomProfiler)world.theProfiler;
+		this.customProfiler = (CustomProfiler)world.profiler;
 		this.mod = mod;
 		this.entityType = type;
 		localGroups = new HashSet<EntityGroup>();
@@ -58,7 +58,7 @@ public class ListManager<T extends EntityObject> implements List<T> {
 		age = 0;
 		
 		if(mod.debug)
-			System.out.println("Initializing " + type + " list for world: " + world.provider.getDimensionName() + "(DIM" + world.provider.getDimensionId() + ")");
+			System.out.println("Initializing " + type + " list for world: " + world.provider.getDimensionType().getName() + "(DIM" + world.provider.getDimension() + ")");
 
 		//Add groups from config
 		loadLocalGroups();
@@ -157,7 +157,7 @@ public class ListManager<T extends EntityObject> implements List<T> {
 		//TODO: Do partial updates each tick to not stop the world, I.e 1% of groups per tick?
 		
 		//Reload config, marking for removal those who no longer exists
-		TickDynamicConfig.loadGroups(mod, "worlds.dim" + world.provider.getDimensionId());
+		TickDynamicConfig.loadGroups(mod, "worlds.dim" + world.provider.getDimension());
 		
 		//Move all EntityObjects to new list for later resorting into new groups
 		ArrayList<EntityObject> entityList = new ArrayList<EntityObject>(entityCount);
@@ -262,7 +262,7 @@ public class ListManager<T extends EntityObject> implements List<T> {
 		age++;
 		
 		if(mod.debug)
-            System.out.println("Cleared all loaded object of the type " + entityType + " from world: " + (world == null ? "Unknown" : world.provider.getDimensionName()));
+            System.out.println("Cleared all loaded object of the type " + entityType + " from world: " + (world == null ? "Unknown" : world.provider.getDimensionType().getName()));
 		
 	}
 

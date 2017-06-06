@@ -54,20 +54,6 @@ public class EntityGroup {
 	private boolean useCorrectedTime;
 	private EntityType groupType;
 	
-	private static Map<String, Class> tileNameToClassMap;
-	
-	static {
-		try {
-			tileNameToClassMap = ReflectionHelper.getPrivateValue(TileEntity.class, null, "nameToClassMap", "field_145855_i");
-			//Field registryField = TileEntity.class.getField("nameToClassMap");
-			//registryField.setAccessible(true);
-			//tileNameToClassMap = (Map<String, Class>)registryField.get(null);
-		} catch(Exception e) {
-			System.err.println(e);
-			System.err.println("Unable to load TileEntities from Mods, class variable(nameToClassMap) lookup failed. The code might be obfuscated!");
-		}
-	}
-	
 	//If base is not null, copy the values from it before reading the config
 	//groupType will be overwritten by config if it already has an entry
 	public EntityGroup(TickDynamicMod mod, World world, TimedEntities timedGroup, String name, String configEntry, EntityType groupType, EntityGroup base) {
@@ -153,31 +139,19 @@ public class EntityGroup {
 			entityClasses = mod.config.get(configEntry, config_classNames, entityClasses, comment).getStringList();
 		}
 
-		String[] mods = {""};
-		comment = "List of mods to include. Will include every Entity or TileEntity from the specific mod, independent of 'entityClassNames' and 'entityNames'\n"
-				+ "Note: Might not work if mod does not properly register the TileEntity/Entity!";
-		if(base != null && !mod.config.hasKey(configEntry, config_modId))
-			mods = mod.config.get(base.configEntry, config_modId, mods, comment).getStringList();
-		else
-		{
-			gotOwnEntries = true;
-			mods = mod.config.get(configEntry, config_modId, mods, comment).getStringList();
-		}
-		
-		
+		gotOwnEntries = true;
+
 		if(gotOwnEntries)
 		{
 			if(groupType == EntityType.Entity)
 			{
 				loadEntitiesByName(entities);
 				loadEntitiesByClassName(entityClasses);
-				loadEntitiesByModNames(mods);
 			}
 			else
 			{
 				loadTilesByName(entities);
 				loadTilesByClassName(entityClasses);
-				loadTilesByModNames(mods);
 			}
 		}
 		else if(base != null)
@@ -322,7 +296,7 @@ public class EntityGroup {
 	private List<Class> loadTilesByName(String name) {
 		FMLControlledNamespacedRegistry<Block> blockRegistry = GameData.getBlockRegistry();
 		Block block = blockRegistry.getObject(new ResourceLocation(name));
-		if(block == Blocks.air)
+		if(block == Blocks.AIR)
 			return null;
 
 		//Get TileEntities for every metadata
@@ -359,7 +333,7 @@ public class EntityGroup {
 	}
 	
 	private Class loadEntityByName(String name) {
-		return (Class)EntityList.stringToClassMapping.get(name);
+		return EntityList.getClass(new ResourceLocation(name));
 	}
 	
 	//Load by class name
@@ -416,59 +390,5 @@ public class EntityGroup {
 		} catch(Exception e) {
 			return null;
 		}
-	}
-	
-	//Load by mod
-	
-	private void loadTilesByModNames(String[] names) {
-		if(names.length == 0)
-			return;
-		if(names.length == 1 && names[0].length() == 0)
-			return;
-		
-		for(String name : names) {
-			loadTilesByModName(name);
-		}
-	}
-	
-	private void loadEntitiesByModNames(String[] names) {
-		if(names.length == 0)
-			return;
-		if(names.length == 1 && names[0].length() == 0)
-			return;
-		
-		for(String name : names)
-		{
-			List<Class> classList = loadEntitiesByModName(name);
-			entityEntries.addAll(classList);
-		}
-	}
-	
-	private List<Class> loadTilesByModName(String name) {
-		if(tileNameToClassMap == null)
-			return null;
-		return loadClassesFromNamePrefix(tileNameToClassMap, name);
-	}
-	
-	private List<Class> loadEntitiesByModName(String name) {
-		return loadClassesFromNamePrefix(EntityList.stringToClassMapping, name);
-	}
-	
-	private List<Class> loadClassesFromNamePrefix(Map<String, ? extends Class> nameToClassMap, String name) {
-		List<Class> classList = new ArrayList<Class>();
-		
-		Set<?> entries = nameToClassMap.entrySet();
-		Iterator<Entry<String, ? extends Class>> it = (Iterator<Entry<String, ? extends Class>>) entries.iterator();
-		while(it.hasNext())
-		{
-			Entry<String, ? extends Class> entry = it.next();
-			if(entry.getKey().startsWith(name)) //TODO: Could get false positives. Use Regex instead?
-			{
-				Class value = entry.getValue();
-				classList.add(value);
-			}
-		}
-		
-		return classList;
 	}
 }

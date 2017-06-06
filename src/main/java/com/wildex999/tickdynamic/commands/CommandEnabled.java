@@ -3,14 +3,20 @@ package com.wildex999.tickdynamic.commands;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mojang.realmsclient.gui.ChatFormatting;
 import com.wildex999.tickdynamic.TickDynamicMod;
 
+import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@MethodsReturnNonnullByDefault
+@ParametersAreNonnullByDefault
 public class CommandEnabled implements ICommand{
 
 	private TickDynamicMod mod;
@@ -27,29 +33,29 @@ public class CommandEnabled implements ICommand{
 	}
 	
 	@Override
-	public String getCommandName() {
+	public String getName() {
 		return "tickdynamic enabled";
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender sender) {
+	public String getUsage(ICommandSender sender) {
 		return "tickdynamic enabled [yes, y, no, n]";
 	}
 
 	@Override
-	public List getCommandAliases() {
+	public List getAliases() {
 		return null;
 	}
 
 	@Override
-	public void processCommand(ICommandSender sender, String[] args) {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 		if(args.length == 1)
 		{
 			if(mod.enabled)
-				sender.addChatMessage(new ChatComponentText("Tick Dynamic is currently " + EnumChatFormatting.GREEN + " Enabled!"));
+				sender.sendMessage(new TextComponentString("Tick Dynamic is currently " + ChatFormatting.GREEN + " Enabled!"));
 			else
-				sender.addChatMessage(new ChatComponentText("Tick Dynamic is currently " + EnumChatFormatting.RED + " Disabled!"));
-			sender.addChatMessage(new ChatComponentText("Usage: " + getCommandUsage(sender)));
+				sender.sendMessage(new TextComponentString("Tick Dynamic is currently " + ChatFormatting.RED + " Disabled!"));
+			sender.sendMessage(new TextComponentString("Usage: " + getUsage(sender)));
 			return;
 		}
 		
@@ -57,35 +63,35 @@ public class CommandEnabled implements ICommand{
 		{
 			if(mod.enabled)
 			{
-				sender.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Tick Dynamic is already enabled!"));
+				sender.sendMessage(new TextComponentString(ChatFormatting.GREEN + "Tick Dynamic is already enabled!"));
 				return;
 			}
 			mod.enabled = true;
-			sender.addChatMessage(new ChatComponentText("Tick Dynamic is now " + EnumChatFormatting.GREEN + "Enabled!"));
+			sender.sendMessage(new TextComponentString("Tick Dynamic is now " + ChatFormatting.GREEN + "Enabled!"));
 			return;
 		}
 		else if(args[1].equals("no") || args[1].equals("n"))
 		{
 			if(!mod.enabled)
 			{
-				sender.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + "Tick Dynamic is already disabled!"));
+				sender.sendMessage(new TextComponentString(ChatFormatting.RED + "Tick Dynamic is already disabled!"));
 				return;
 			}
 			mod.enabled = false;
-			sender.addChatMessage(new ChatComponentText("Tick Dynamic is now " + EnumChatFormatting.RED + "Disabled!"));
+			sender.sendMessage(new TextComponentString("Tick Dynamic is now " + ChatFormatting.RED + "Disabled!"));
 			return;
 		}
 		
-		sender.addChatMessage(new ChatComponentText("Unrecognized argument: " + args[1]));
+		sender.sendMessage(new TextComponentString("Unrecognized argument: " + args[1]));
 	}
 
 	@Override
-	public boolean canCommandSenderUseCommand(ICommandSender sender) {
-		return sender.canCommandSenderUseCommand(1, getCommandName());
+	public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
+		return sender.canUseCommand(1, getName());
 	}
 
 	@Override
-	public List addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
+	public List getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 		if(args[args.length-1].startsWith("y"))
 			return listYes;
 		else if(args[args.length-1].startsWith("n"))
