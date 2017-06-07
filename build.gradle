@@ -176,7 +176,7 @@ uploadArchives {
                                     role "owner"
                                     role "developer"
                                 }
-                            },
+                            }
 							developer {
                                 id "wildex999"
                                 name "wildex999"

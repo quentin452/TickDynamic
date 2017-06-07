@@ -1,13 +1,13 @@
 [
 {
   "modid": "tickdynamic",
-  "name": "Tick Dynamic ",
-  "description": "",
+  "name": "Tick Dynamic",
+  "description": "Dynamic control of the world tickrate to reduce apparent lag.",
   "version": "${version}",
   "mcversion": "1.11.2",
   "url": "",
   "updateUrl": "",
-  "authorList": ["The_Fireplace","Wildex999"],
+  "authorList": ["The_Fireplace","Wildex999 ( wildex999@gmail.com )"],
   "logoFile": "",
   "screenshots": [],
   "dependencies": []

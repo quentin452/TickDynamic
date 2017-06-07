@@ -159,7 +159,7 @@ public class TickDynamicConfig {
 		Set<ConfigCategory> groups = groupsCat.getChildren();
 
 		//Remove every group which is no longer in groups set
-		ArrayList<String> toRemove = new ArrayList<String>();
+		ArrayList<String> toRemove = new ArrayList<>();
 		for (String groupPath : mod.entityGroups.keySet()) {
 			if (!groupPath.startsWith(category))
 				continue; //We only care about groups in the same category
@@ -202,7 +202,7 @@ public class TickDynamicConfig {
 		}
 
 		//Load new groups
-		ArrayList<EntityGroup> updateGroups = new ArrayList<EntityGroup>();
+		ArrayList<EntityGroup> updateGroups = new ArrayList<>();
 		for (ConfigCategory group : groups) {
 			//Check if group already exists
 			String groupPath = category + "." + group.getName();

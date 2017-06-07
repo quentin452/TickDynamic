@@ -36,10 +36,10 @@ public class ListManager<T extends EntityObject> implements List<T> {
 		this.customProfiler = (CustomProfiler) world.profiler;
 		this.mod = mod;
 		this.entityType = type;
-		localGroups = new HashSet<EntityGroup>();
-		groupMap = new HashMap<Class, EntityGroup>();
-		playerEntities = new ArrayList<EntityPlayer>();
-		queuedEntities = new ArrayDeque<EntityObject>();
+		localGroups = new HashSet<>();
+		groupMap = new HashMap<>();
+		playerEntities = new ArrayList<>();
+		queuedEntities = new ArrayDeque<>();
 
 		entityCount = 0;
 		age = 0;
@@ -142,7 +142,7 @@ public class ListManager<T extends EntityObject> implements List<T> {
 		TickDynamicConfig.loadGroups(mod, "worlds.dim" + world.provider.getDimension());
 
 		//Move all EntityObjects to new list for later resorting into new groups
-		ArrayList<EntityObject> entityList = new ArrayList<EntityObject>(entityCount);
+		ArrayList<EntityObject> entityList = new ArrayList<>(entityCount);
 		Iterator<EntityGroup> groupIterator = localGroups.iterator();
 		while (groupIterator.hasNext()) {
 			EntityGroup group = groupIterator.next();
@@ -314,7 +314,7 @@ public class ListManager<T extends EntityObject> implements List<T> {
 
 	@Override
 	public boolean isEmpty() {
-		return entityCount == 0 ? true : false;
+		return entityCount == 0;
 	}
 
 	@Override
@@ -432,7 +432,7 @@ public class ListManager<T extends EntityObject> implements List<T> {
 		Object[] objects = new Object[entityCount];
 		int offset = 0;
 		for (EntityGroup group : localGroups) {
-			System.arraycopy(group.entities, 0, objects, offset, group.entities.size());
+			System.arraycopy(group.entities.toArray(), 0, objects, offset, group.entities.size());
 			offset += group.entities.size();
 		}
 		return objects;

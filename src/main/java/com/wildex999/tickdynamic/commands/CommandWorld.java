@@ -98,7 +98,7 @@ public class CommandWorld implements ICommand {
 		writeHeader(outputBuilder);
 
 		//Get groups from world
-		List<EntityGroup> groups = new ArrayList<EntityGroup>();
+		List<EntityGroup> groups = new ArrayList<>();
 		if (world.loadedEntityList instanceof ListManager)
 			addGroupsFromList(groups, (ListManager) world.loadedEntityList);
 		if (world.tickableTileEntities instanceof ListManager)
@@ -106,12 +106,10 @@ public class CommandWorld implements ICommand {
 
 		//Sort the groups, so we don't just have Entities followed by TileEntities
 		//TODO: More sorting options
-		Collections.sort(groups, new Comparator() {
-			public int compare(Object o1, Object o2) {
-				EntityGroup group1 = (EntityGroup) o1;
-				EntityGroup group2 = (EntityGroup) o2;
-				return group1.getName().compareTo(group2.getName());
-			}
+		groups.sort((o1, o2) -> {
+			EntityGroup group1 = (EntityGroup) o1;
+			EntityGroup group2 = (EntityGroup) o2;
+			return group1.getName().compareTo(group2.getName());
 		});
 
 		int listSize = groups.size();
@@ -148,10 +146,10 @@ public class CommandWorld implements ICommand {
 	}
 
 	private void writeHeader(StringBuilder builder) {
-		builder.append(ChatFormatting.GREEN + "Groups for world: ").append(ChatFormatting.RESET + world.provider.getDimensionType().getName()).
+		builder.append(ChatFormatting.GREEN + "Groups for world: ").append(ChatFormatting.RESET).append(world.provider.getDimensionType().getName()).
 				append("(DIM: ").append(world.provider.getDimension()).append(")\n");
 
-		builder.append(ChatFormatting.GRAY + "+" + StringUtils.repeat("=", borderWidth) + "+\n");
+		builder.append(ChatFormatting.GRAY + "+").append(StringUtils.repeat("=", borderWidth)).append("+\n");
 		builder.append(ChatFormatting.GRAY + "| ").append(ChatFormatting.GOLD + "Group").append(ChatFormatting.GRAY);
 
 		builder.append(" || ").append(ChatFormatting.GOLD + "Time(Avg.)").append(ChatFormatting.GRAY);
@@ -163,7 +161,7 @@ public class CommandWorld implements ICommand {
 
 	private void writeGroup(StringBuilder builder, EntityGroup group) {
 		TimedEntities timedGroup = group.timedGroup;
-		builder.append(ChatFormatting.GRAY + "| ").append(ChatFormatting.RESET + group.getName());
+		builder.append(ChatFormatting.GRAY + "| ").append(ChatFormatting.RESET).append(group.getName());
 
 		if (timedGroup == null) { //No Timed data
 			builder.append(ChatFormatting.RED + " N/A\n");
@@ -194,14 +192,14 @@ public class CommandWorld implements ICommand {
 
 	private void writeFooter(StringBuilder builder) {
 		if (maxPages == 0)
-			builder.append(ChatFormatting.GRAY + "+" + StringUtils.repeat("=", borderWidth) + "+\n");
+			builder.append(ChatFormatting.GRAY + "+").append(StringUtils.repeat("=", borderWidth)).append("+\n");
 		else {
 			String pagesStr = ChatFormatting.GREEN + "Page " + currentPage + "/" + maxPages;
 			int pagesLength = getVisibleLength(pagesStr);
 			int otherLength = borderWidth - pagesLength;
-			builder.append(ChatFormatting.GRAY + "+" + StringUtils.repeat("=", otherLength / 2));
+			builder.append(ChatFormatting.GRAY + "+").append(StringUtils.repeat("=", otherLength / 2));
 			builder.append(pagesStr);
-			builder.append(ChatFormatting.GRAY + StringUtils.repeat("=", otherLength / 2) + "+\n");
+			builder.append(ChatFormatting.GRAY).append(StringUtils.repeat("=", otherLength / 2)).append("+\n");
 		}
 	}
 

@@ -38,7 +38,7 @@ public class TimedEntities extends TimedGroup {
 	public void init() {
 		currentTPS = 0;
 		objectsRun = 0;
-		listTPS = new LinkedList<Double>();
+		listTPS = new LinkedList<>();
 		setTimeMax(0);
 
 		if (this.base == null) {

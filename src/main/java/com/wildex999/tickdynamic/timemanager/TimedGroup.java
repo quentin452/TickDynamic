@@ -45,8 +45,8 @@ public class TimedGroup implements ITimed {
 		this.world = world;
 		this.configEntry = configEntry;
 
-		listTimeUsed = new LinkedList<Long>();
-		listObjectsRun = new LinkedList<Integer>();
+		listTimeUsed = new LinkedList<>();
+		listObjectsRun = new LinkedList<>();
 	}
 
 	//Initialize a timed group, reading in the configuration if it exists.

@@ -8,8 +8,6 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.concurrent.Semaphore;
 
-import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
 import com.wildex999.tickdynamic.commands.CommandHandler;
 import com.wildex999.tickdynamic.listinject.EntityGroup;
 import com.wildex999.tickdynamic.listinject.EntityType;
@@ -33,9 +31,9 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
 
-//Written by: Wildex999 ( wildex999@gmail.com )
-
-/*
+/**
+ * @author Wildex999 ( wildex999@gmail.com )
+ * @author The_Fireplace ( the.f1repl4ce@gmail.com )
  * Later ideas:
  * - Entities far away from players tick less often.
  * - Entities and TileEntities grouped by owner(Player), and limits can be set per player.
@@ -49,7 +47,8 @@ public class TickDynamicMod {
 	public static boolean debug = false;
 	public static boolean debugGroups = false;
 	public static boolean debugTimer = false;
-	public static TickDynamicMod tickDynamic;
+	@Mod.Instance(MODID)
+	public static TickDynamicMod instance;
 
 
 	public Map<String, ITimed> timedObjects;
@@ -78,28 +77,11 @@ public class TickDynamicMod {
 	public int defaultWorldSlicesMax = 100;
 	public int defaultAverageTicks = 20;
 
-	//@Override
-	public boolean registerBus(EventBus bus, LoadController controller) {
-		bus.register(this);
-		return true;
-	}
-
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
-		ModMetadata meta = event.getModMetadata();
-		meta.version = VERSION;
-		meta.modId = MODID;
-		meta.name = "Tick Dynamic";
-		meta.description = "Dynamic control of the world tickrate to reduce apparent lag.";
-		meta.authorList.add("Wildex999 ( wildex999@gmail.com )");
-		meta.authorList.add("The_Fireplace");
-		meta.updateUrl = "http://mods.stjerncraft.com/tickdynamic";
-		meta.url = "http://mods.stjerncraft.com/tickdynamic";
-
-		tickDynamic = this;
 		tpsMutex = new Semaphore(1);
 		tpsTimer = new Timer();
-		tpsList = new LinkedList<Integer>();
+		tpsList = new LinkedList<>();
 		config = new Configuration(event.getSuggestedConfigurationFile());
 	}
 
@@ -122,8 +104,8 @@ public class TickDynamicMod {
 	@Mod.EventHandler
 	public void init(FMLInitializationEvent event) {
 		MinecraftForge.EVENT_BUS.register(this);
-		timedObjects = new HashMap<String, ITimed>();
-		entityGroups = new HashMap<String, EntityGroup>();
+		timedObjects = new HashMap<>();
+		entityGroups = new HashMap<>();
 
 		loadConfig(true);
 
@@ -243,9 +225,8 @@ public class TickDynamicMod {
 	//Return: Null if doesn't exist in config
 	public EntityGroup getEntityGroup(String name) {
 		//All Global Groups are loaded during config load/reload
-		EntityGroup group = entityGroups.get(name);
 
-		return group;
+		return entityGroups.get(name);
 	}
 
 	public TimeManager getTimeManager(String name) {
@@ -291,7 +272,7 @@ public class TickDynamicMod {
 		TimedGroup group = getTimedGroup(groupName);
 
 		if ((group == null || !(group instanceof TimedEntities)) && canCreate) {
-			String baseGroupName = new StringBuilder().append("groups.").append(name).toString();
+			String baseGroupName = "groups." + name;
 			TimedGroup baseGroup = getTimedGroup(baseGroupName);
 			group = new TimedEntities(this, world, name, hasConfig ? groupName : null, baseGroup);
 			group.init();
@@ -313,7 +294,7 @@ public class TickDynamicMod {
 
 		if (group == null && canCreate) //Create group for world
 		{
-			String baseGroupName = new StringBuilder().append("groups.").append(name).toString();
+			String baseGroupName = "groups." + name;
 			EntityGroup baseGroup = getEntityGroup(baseGroupName);
 			group = new EntityGroup(this, world, getWorldTimedGroup(world, name, true, hasConfig), name, hasConfig ? groupName : null, groupType, baseGroup);
 			entityGroups.put(groupName, group);
@@ -324,7 +305,7 @@ public class TickDynamicMod {
 
 	//Get all EntityGroups for the given world
 	public List<EntityGroup> getWorldEntityGroups(World world) {
-		List<EntityGroup> groups = new ArrayList<EntityGroup>();
+		List<EntityGroup> groups = new ArrayList<>();
 
 		String remote = "";
 		int offsetCount = 10;
@@ -333,7 +314,7 @@ public class TickDynamicMod {
 			offsetCount += 7;
 		}
 
-		String groupNamePrefix = new StringBuilder().append(world.provider.getDimension()).append(".").toString();
+		String groupNamePrefix = String.valueOf(world.provider.getDimension()) + ".";
 		//TODO: Don't compare the first 10 characters, as they are always the same(Have offset)
 		for (Map.Entry<String, EntityGroup> entry : entityGroups.entrySet()) {
 			String groupName = entry.getKey();
@@ -383,14 +364,12 @@ public class TickDynamicMod {
 	//Get the group for Ungrouped Tile Entities in the given world
 	//Will create the world TimeManager and Entity Group if it doesn't exist.
 	public EntityGroup getWorldTileEntities(World world) {
-		EntityGroup teGroup = getWorldEntityGroup(world, "tileentity", EntityType.TileEntity, true, true);
-		return teGroup;
+		return getWorldEntityGroup(world, "tileentity", EntityType.TileEntity, true, true);
 	}
 
 	//Get the group for Ungrouped Tile Entities in the given world
 	//Will create the world TimeManager and Entity Group if it doesn't exist.
 	public EntityGroup getWorldEntities(World world) {
-		EntityGroup eGroup = getWorldEntityGroup(world, "entity", EntityType.Entity, true, true);
-		return eGroup;
+		return getWorldEntityGroup(world, "entity", EntityType.Entity, true, true);
 	}
 }

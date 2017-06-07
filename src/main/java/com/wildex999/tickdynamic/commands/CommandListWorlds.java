@@ -108,7 +108,7 @@ public class CommandListWorlds implements ICommand {
 			if (world == null || worldManager == null)
 				continue;
 
-			outputBuilder.append(ChatFormatting.GRAY + "| ").append(ChatFormatting.RESET + world.provider.getDimensionType().getName());
+			outputBuilder.append(ChatFormatting.GRAY + "| ").append(ChatFormatting.RESET).append(world.provider.getDimensionType().getName());
 			String usedTime = decimalFormat.format(worldManager.getTimeUsedAverage() / (double) TimeManager.timeMilisecond);
 			String maxTime = decimalFormat.format(worldManager.getTimeMax() / (double) TimeManager.timeMilisecond);
 			outputBuilder.append(ChatFormatting.GRAY + " || ").append(ChatFormatting.RESET).append(usedTime).append("/").append(maxTime);
@@ -143,7 +143,7 @@ public class CommandListWorlds implements ICommand {
 	public void writeHeader(StringBuilder builder) {
 		builder.append(ChatFormatting.GREEN + "Worlds list with time. Usage: tickdynamic worldList [page]\n");
 
-		builder.append(ChatFormatting.GRAY + "+" + StringUtils.repeat("=", borderWidth) + "+\n");
+		builder.append(ChatFormatting.GRAY + "+").append(StringUtils.repeat("=", borderWidth)).append("+\n");
 		builder.append(ChatFormatting.GRAY + "| ").append(ChatFormatting.GOLD + "World").append(ChatFormatting.GRAY);
 
 		builder.append(" || ").append(ChatFormatting.GOLD + "Time(Used/Allocated)").append(ChatFormatting.GRAY);
@@ -153,14 +153,14 @@ public class CommandListWorlds implements ICommand {
 
 	public void writeFooter(StringBuilder builder) {
 		if (maxPages == 0)
-			builder.append(ChatFormatting.GRAY + "+" + StringUtils.repeat("=", borderWidth) + "+\n");
+			builder.append(ChatFormatting.GRAY + "+").append(StringUtils.repeat("=", borderWidth)).append("+\n");
 		else {
 			String pagesStr = ChatFormatting.GREEN + "Page " + currentPage + "/" + maxPages;
 			int pagesLength = getVisibleLength(pagesStr);
 			int otherLength = borderWidth - pagesLength;
-			builder.append(ChatFormatting.GRAY + "+" + StringUtils.repeat("=", otherLength / 2));
+			builder.append(ChatFormatting.GRAY + "+").append(StringUtils.repeat("=", otherLength / 2));
 			builder.append(pagesStr);
-			builder.append(ChatFormatting.GRAY + StringUtils.repeat("=", otherLength / 2) + "+\n");
+			builder.append(ChatFormatting.GRAY).append(StringUtils.repeat("=", otherLength / 2)).append("+\n");
 		}
 	}
 

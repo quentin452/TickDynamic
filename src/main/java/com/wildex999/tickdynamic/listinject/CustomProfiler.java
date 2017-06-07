@@ -54,15 +54,20 @@ public class CustomProfiler extends Profiler {
 				break;
 
 			case InLoop:
-				if (sectionName.equals("tick")) {
-					setStage(Stage.InTick);
-					depthCount = 0;
-				} else if (sectionName.equals("remove")) {
-					setStage(Stage.InRemove);
-					depthCount = 0;
-				} else if (sectionName.equals("blockEntities")) {
-					setStage(Stage.None); //Done ticking Entities
-					reachedTile = true;
+				switch (sectionName) {
+					case "tick":
+						setStage(Stage.InTick);
+						depthCount = 0;
+						break;
+					case "remove":
+						setStage(Stage.InRemove);
+						depthCount = 0;
+						break;
+					case "blockEntities":
+						setStage(Stage.None); //Done ticking Entities
+
+						reachedTile = true;
+						break;
 				}
 				break;
 

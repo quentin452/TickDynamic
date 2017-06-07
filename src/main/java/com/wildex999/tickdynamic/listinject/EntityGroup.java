@@ -65,8 +65,8 @@ public class EntityGroup {
 		this.configEntry = configEntry;
 		this.groupType = groupType;
 
-		entities = new ArrayList<EntityObject>();
-		entityEntries = new HashSet<Class>();
+		entities = new ArrayList<>();
+		entityEntries = new HashSet<>();
 		list = null;
 
 		if (base != null) {
@@ -281,7 +281,7 @@ public class EntityGroup {
 		//Get TileEntities for every metadata
 		TileEntity currentTile;
 		Class prevTile = null;
-		List<Class> tileClassList = new ArrayList<Class>(16);
+		List<Class> tileClassList = new ArrayList<>(16);
 		for (byte b = 0; b < 16; b++) {
 			IBlockState state = block.getStateFromMeta(b);
 			if (block.hasTileEntity(state)) {

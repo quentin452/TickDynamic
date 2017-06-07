@@ -28,7 +28,7 @@ public class ASMClassParser {
 		cl = new ClassWriter(0);
 
 		//Generate a list of tokens
-		tokens = new ArrayList<Token>();
+		tokens = new ArrayList<>();
 
 		int tokenStart = 0;
 		int curPos = 0;
@@ -74,7 +74,7 @@ public class ASMClassParser {
 			}
 
 			//Not whitespace
-			if (inToken == false) {
+			if (!inToken) {
 				inToken = true;
 				tokenStart = curPos - 1;
 			}
@@ -113,13 +113,19 @@ public class ASMClassParser {
 			if (value.startsWith("//")) {
 				//Check for pre-method generics signature
 				value = nextToken();
-				if (value.equals("signature"))
-					signature = nextToken();
-				else if (value.equals("compiled")) {
-					currentToken++; //Skip the 'from:'
-					cl.visitSource(nextToken(), null);
-				} else
-					currentToken--;
+				switch (value) {
+					case "signature":
+						signature = nextToken();
+						break;
+					case "compiled":
+						currentToken++; //Skip the 'from:'
+
+						cl.visitSource(nextToken(), null);
+						break;
+					default:
+						currentToken--;
+						break;
+				}
 				skipLine();
 				continue;
 			}
@@ -263,11 +269,12 @@ public class ASMClassParser {
 
 		String className = nextToken();
 		String superClassName = null;
-		List<String> impl = new ArrayList<String>();
+		List<String> impl = new ArrayList<>();
 		String value;
 
 		//Extending, implementing or done?
 		boolean implement = false;
+		label:
 		while (true) {
 			value = nextToken();
 
@@ -278,12 +285,17 @@ public class ASMClassParser {
 				continue;
 			}
 
-			if (value.equals("implements"))
-				implement = true;
-			else if (value.equals("extends"))
-				superClassName = nextToken();
-			else if (value.equals("{")) //Done reading header info
-				break;
+			switch (value) {
+				case "implements":
+					implement = true;
+					break;
+				case "extends":
+					superClassName = nextToken();
+					break;
+				case "{":
+//Done reading header info
+					break label;
+			}
 		}
 
 		//Write header
@@ -324,55 +336,75 @@ public class ASMClassParser {
 				return access;
 
 			//A lot of these actually are not a keyword, but something the compiler adds, just keep it here for now
-			if (current.equals("public"))
-				access += Opcodes.ACC_PUBLIC;
-			else if (current.equals("private"))
-				access += Opcodes.ACC_PRIVATE;
-			else if (current.equals("protected"))
-				access += Opcodes.ACC_PROTECTED;
-			else if (current.equals("static"))
-				access += Opcodes.ACC_STATIC;
-			else if (current.equals("final"))
-				access += Opcodes.ACC_FINAL;
+			switch (current) {
+				case "public":
+					access += Opcodes.ACC_PUBLIC;
+					break;
+				case "private":
+					access += Opcodes.ACC_PRIVATE;
+					break;
+				case "protected":
+					access += Opcodes.ACC_PROTECTED;
+					break;
+				case "static":
+					access += Opcodes.ACC_STATIC;
+					break;
+				case "final":
+					access += Opcodes.ACC_FINAL;
+					break;
 			/*else if(current.equals("super"))
-				access += Opcodes.ACC_SUPER;*/ //This one is added on newer compilers whenever a class has a super class
-			else if (current.equals("synchronized"))
-				access += Opcodes.ACC_SYNCHRONIZED;
-			else if (current.equals("volatile"))
-				access += Opcodes.ACC_VOLATILE;
-			else if (current.equals("bridge"))
-				access += Opcodes.ACC_BRIDGE;
-			else if (current.equals("varargs")) {
-				if (!gotTransient) {
-					access += Opcodes.ACC_VARARGS;
-					gotVarargs = true;
-				}
-			} else if (current.equals("transient")) {
-				if (!gotVarargs) {
-					access += Opcodes.ACC_TRANSIENT;
-					gotTransient = true;
-				}
-			} else if (current.equals("native"))
-				access += Opcodes.ACC_NATIVE;
-			else if (current.equals("interface"))
-				access += Opcodes.ACC_INTERFACE;
-			else if (current.equals("abstract"))
-				access += Opcodes.ACC_ABSTRACT;
-			else if (current.equals("strict"))
-				access += Opcodes.ACC_STRICT;
-			else if (current.equals("synthetic"))
-				access += Opcodes.ACC_SYNTHETIC;
-			else if (current.equals("annotation"))
-				access += Opcodes.ACC_ANNOTATION;
-			else if (current.equals("enum"))
-				access += Opcodes.ACC_ENUM;
-			else if (current.equals("mandated"))
-				access += Opcodes.ACC_MANDATED;
-			else {
-				//Move back from our peek
-				currentToken--;
-				//System.out.println("Access: " + Integer.toHexString(access).toUpperCase());
-				return access;
+				access += Opcodes.ACC_SUPER;*/
+//This one is added on newer compilers whenever a class has a super class
+				case "synchronized":
+					access += Opcodes.ACC_SYNCHRONIZED;
+					break;
+				case "volatile":
+					access += Opcodes.ACC_VOLATILE;
+					break;
+				case "bridge":
+					access += Opcodes.ACC_BRIDGE;
+					break;
+				case "varargs":
+					if (!gotTransient) {
+						access += Opcodes.ACC_VARARGS;
+						gotVarargs = true;
+					}
+					break;
+				case "transient":
+					if (!gotVarargs) {
+						access += Opcodes.ACC_TRANSIENT;
+						gotTransient = true;
+					}
+					break;
+				case "native":
+					access += Opcodes.ACC_NATIVE;
+					break;
+				case "interface":
+					access += Opcodes.ACC_INTERFACE;
+					break;
+				case "abstract":
+					access += Opcodes.ACC_ABSTRACT;
+					break;
+				case "strict":
+					access += Opcodes.ACC_STRICT;
+					break;
+				case "synthetic":
+					access += Opcodes.ACC_SYNTHETIC;
+					break;
+				case "annotation":
+					access += Opcodes.ACC_ANNOTATION;
+					break;
+				case "enum":
+					access += Opcodes.ACC_ENUM;
+					break;
+				case "mandated":
+					access += Opcodes.ACC_MANDATED;
+					break;
+				default:
+					//Move back from our peek
+					currentToken--;
+					//System.out.println("Access: " + Integer.toHexString(access).toUpperCase());
+					return access;
 			}
 		}
 	}
@@ -604,6 +636,7 @@ public class ASMClassParser {
 			val.value = new Integer(token);
 			return val;
 		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 		throw new Exception(getCurrentTokenLine() + ": Could not parse value: " + token);
@@ -616,7 +649,7 @@ public class ASMClassParser {
 		String desc;
 		String[] exceptionsArray = null;
 
-		Map<String, Label> labels = new HashMap<String, Label>();
+		Map<String, Label> labels = new HashMap<>();
 
 		int index = value.indexOf("(");
 		methodName = value.substring(0, index);
@@ -627,7 +660,7 @@ public class ASMClassParser {
 		value = nextToken();
 
 		if (value.equals("throws")) {
-			List<String> exceptions = new ArrayList<String>();
+			List<String> exceptions = new ArrayList<>();
 			while (true) {
 				value = nextToken();
 				if (value.equals("\n"))
@@ -688,7 +721,7 @@ public class ASMClassParser {
 				parseInstruction(method, labels, insnSignature);
 				insnSignature = null; //Reset signature after known instruction
 			} else {
-				if (lineData == false)
+				if (!lineData)
 					break; //End of method
 				else
 					lineData = false;
@@ -801,7 +834,7 @@ public class ASMClassParser {
 			int max = 0;
 			String temp;
 			Label defLabel;
-			List<Label> labelList = new ArrayList<Label>();
+			List<Label> labelList = new ArrayList<>();
 			while (true) {
 				int index;
 				temp = nextToken();
@@ -823,8 +856,8 @@ public class ASMClassParser {
 		} else if (value.equals("LOOKUPSWITCH")) {
 			String temp;
 			Label defLabel;
-			List<Integer> keyList = new ArrayList<Integer>();
-			List<Label> labelList = new ArrayList<Label>();
+			List<Integer> keyList = new ArrayList<>();
+			List<Label> labelList = new ArrayList<>();
 			while (true) {
 				temp = nextToken();
 				if (temp.equals("default:")) {
@@ -865,20 +898,28 @@ public class ASMClassParser {
 			int type = 0;
 
 			//Frame operation type
-			if (typeStr.equals("NEW"))
-				type = Opcodes.F_NEW;
-			else if (typeStr.equals("FULL"))
-				type = Opcodes.F_FULL;
-			else if (typeStr.equals("SAME"))
-				type = Opcodes.F_SAME;
-			else if (typeStr.equals("SAME1"))
-				type = Opcodes.F_SAME1;
-			else if (typeStr.equals("APPEND"))
-				type = Opcodes.F_APPEND;
-			else if (typeStr.equals("CHOP"))
-				type = Opcodes.F_CHOP;
-			else
-				throw new Exception(getCurrentTokenLine() + ": Error while parsing method frame: No known FRAME type found. Got: " + typeStr);
+			switch (typeStr) {
+				case "NEW":
+					type = Opcodes.F_NEW;
+					break;
+				case "FULL":
+					type = Opcodes.F_FULL;
+					break;
+				case "SAME":
+					type = Opcodes.F_SAME;
+					break;
+				case "SAME1":
+					type = Opcodes.F_SAME1;
+					break;
+				case "APPEND":
+					type = Opcodes.F_APPEND;
+					break;
+				case "CHOP":
+					type = Opcodes.F_CHOP;
+					break;
+				default:
+					throw new Exception(getCurrentTokenLine() + ": Error while parsing method frame: No known FRAME type found. Got: " + typeStr);
+			}
 
 			Object[] localTypes = null;
 			Object[] stackTypes = null;
@@ -924,7 +965,7 @@ public class ASMClassParser {
 	}
 
 	protected Object[] parseFrameElements(Map<String, Label> labels) throws Exception {
-		List<Object> objects = new ArrayList<Object>();
+		List<Object> objects = new ArrayList<>();
 
 		String value = nextToken();
 		if (value.equals("[]")) //Empty
@@ -953,22 +994,24 @@ public class ASMClassParser {
 	protected Object parseFrameType(Map<String, Label> labels, String typeStr) throws Exception {
 		if (typeStr.length() == 1) //Base type
 		{
-			if (typeStr.equals("T"))
-				return Opcodes.TOP;
-			else if (typeStr.equals("I"))
-				return Opcodes.INTEGER;
-			else if (typeStr.equals("F"))
-				return Opcodes.FLOAT;
-			else if (typeStr.equals("D"))
-				return Opcodes.DOUBLE;
-			else if (typeStr.equals("J"))
-				return Opcodes.LONG;
-			else if (typeStr.equals("N"))
-				return Opcodes.NULL;
-			else if (typeStr.equals("U"))
-				return Opcodes.UNINITIALIZED_THIS;
-			else
-				throw new Exception(getCurrentTokenLine() + ": Error while parsing frame type, found no type for " + typeStr);
+			switch (typeStr) {
+				case "T":
+					return Opcodes.TOP;
+				case "I":
+					return Opcodes.INTEGER;
+				case "F":
+					return Opcodes.FLOAT;
+				case "D":
+					return Opcodes.DOUBLE;
+				case "J":
+					return Opcodes.LONG;
+				case "N":
+					return Opcodes.NULL;
+				case "U":
+					return Opcodes.UNINITIALIZED_THIS;
+				default:
+					throw new Exception(getCurrentTokenLine() + ": Error while parsing frame type, found no type for " + typeStr);
+			}
 		}
 
 		//Label
@@ -981,17 +1024,13 @@ public class ASMClassParser {
 
 	//Return a label for the given labelIndex, creating it in the map if it doesn't exist
 	protected Label getLabel(Map<String, Label> labelMap, String labelIndex) {
-		Label label = labelMap.get(labelIndex);
-		if (label == null) {
-			label = new Label();
-			labelMap.put(labelIndex, label);
-		}
+		Label label = labelMap.computeIfAbsent(labelIndex, k -> new Label());
 		return label;
 	}
 
 	protected boolean stringArrayContains(String[] arr, String value) {
-		for (int i = 0; i < arr.length; i++) {
-			if (arr[i].equals(value))
+		for (String anArr : arr) {
+			if (anArr.equals(value))
 				return true;
 		}
 

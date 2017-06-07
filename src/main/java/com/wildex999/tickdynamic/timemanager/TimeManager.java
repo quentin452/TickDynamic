@@ -40,7 +40,7 @@ public class TimeManager implements ITimed {
 	public String configEntry;
 
 	public TimeManager(TickDynamicMod mod, World world, String name, String configEntry) {
-		children = new ArrayList<ITimed>();
+		children = new ArrayList<>();
 		if (configEntry != null)
 			mod.timedObjects.put(configEntry, this);
 		else
@@ -106,7 +106,7 @@ public class TimeManager implements ITimed {
 		long leftover = timeMax;
 		int allSlices = 0;
 		int allSlicesPrev;
-		List<ITimed> childrenLeft = new ArrayList<ITimed>(children);
+		List<ITimed> childrenLeft = new ArrayList<>(children);
 
 		//Set the initial distribution
 		for (Iterator<ITimed> it = childrenLeft.iterator(); it.hasNext(); ) {
@@ -145,7 +145,7 @@ public class TimeManager implements ITimed {
 			for (Iterator<ITimed> it = childrenLeft.iterator(); it.hasNext(); ) {
 				ITimed child = it.next();
 				long slice = 1 + (long) (before * ((double) child.getSliceMax() / (double) allSlices)); //A slice can't be 0
-				if (firstPass == true) {
+				if (firstPass) {
 					long reserved = child.getReservedTime();
 					slice -= reserved;
 					if (slice < 0)
@@ -224,8 +224,7 @@ public class TimeManager implements ITimed {
 	public long getTimeUsed() {
 		long output = 0;
 
-		for (Iterator<ITimed> it = children.iterator(); it.hasNext(); ) {
-			ITimed child = it.next();
+		for (ITimed child : children) {
 			output += child.getTimeUsed();
 		}
 
@@ -238,8 +237,7 @@ public class TimeManager implements ITimed {
 		if (useCached)
 			return cachedTimeUsedAverage;
 
-		for (Iterator<ITimed> it = children.iterator(); it.hasNext(); ) {
-			ITimed child = it.next();
+		for (ITimed child : children) {
 			output += child.getTimeUsedAverage();
 		}
 		return output;
@@ -248,8 +246,7 @@ public class TimeManager implements ITimed {
 	public long getTimeUsedLast() {
 		long output = 0;
 
-		for (Iterator<ITimed> it = children.iterator(); it.hasNext(); ) {
-			ITimed child = it.next();
+		for (ITimed child : children) {
 			output += child.getTimeUsedLast();
 		}
 
@@ -274,8 +271,7 @@ public class TimeManager implements ITimed {
 	public void newTick(boolean recursive) {
 
 		if (recursive) {
-			for (Iterator<ITimed> it = children.iterator(); it.hasNext(); )
-				it.next().newTick(true);
+			for (ITimed aChildren : children) aChildren.newTick(true);
 		}
 
 		useCached = false;
@@ -284,8 +280,7 @@ public class TimeManager implements ITimed {
 
 	public void endTick(boolean recursive) {
 		if (recursive) {
-			for (Iterator<ITimed> it = children.iterator(); it.hasNext(); )
-				it.next().endTick(recursive);
+			for (ITimed aChildren : children) aChildren.endTick(recursive);
 		}
 
 		//Update caches

@@ -23,8 +23,8 @@ public class WorldEventHandler {
 
 	public WorldEventHandler(TickDynamicMod mod) {
 		this.mod = mod;
-		entityListManager = new HashMap<World, ListManagerEntities>();
-		tileListManager = new HashMap<World, ListManager>();
+		entityListManager = new HashMap<>();
+		tileListManager = new HashMap<>();
 	}
 
 	@SubscribeEvent
@@ -55,7 +55,7 @@ public class WorldEventHandler {
 			setCustomProfiler(event.getWorld(), new CustomProfiler(event.getWorld().profiler));
 		} catch (Exception e) {
 			System.err.println("Unable to set TickDynamic World profiler! World will not be using TickDynamic: " + event.getWorld());
-			System.err.println(e);
+			e.printStackTrace();
 			return; //Do not add TickDynamic to world
 		}
 
@@ -69,18 +69,14 @@ public class WorldEventHandler {
 			System.out.println("Adding " + event.getWorld().loadedEntityList.size() + " existing Entities.");
 		List<? extends EntityObject> oldList = event.getWorld().loadedEntityList;
 		ReflectionHelper.setPrivateValue(World.class, event.getWorld(), entityManager, "loadedEntityList", "field_72996_f");
-		for (EntityObject obj : oldList) {
-			entityManager.add(obj);
-		}
+		entityManager.addAll(oldList);
 
 		//Tiles
 		if (mod.debug)
 			System.out.println("Adding " + event.getWorld().tickableTileEntities.size() + " existing TileEntities.");
 		oldList = event.getWorld().tickableTileEntities;
 		ReflectionHelper.setPrivateValue(World.class, event.getWorld(), tileEntityManager, "tickableTileEntities", "field_175730_i");
-		for (EntityObject obj : oldList) {
-			tileEntityManager.add(obj);
-		}
+		tileEntityManager.addAll(oldList);
 
 	}
 

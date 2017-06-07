@@ -33,11 +33,11 @@ public class CommandHandler implements ICommand {
 	public CommandHandler(TickDynamicMod mod) {
 		this.mod = mod;
 
-		aliases = new ArrayList<String>();
+		aliases = new ArrayList<>();
 		aliases.add("tickdynamic");
 		aliases.add("td");
 
-		subCommandHandlers = new HashMap<String, ICommand>();
+		subCommandHandlers = new HashMap<>();
 		subCommandHandlers.put("reload", new CommandReload(mod));
 		subCommandHandlers.put("reloadgroups", new CommandReloadGroups(mod));
 		subCommandHandlers.put("listworlds", new CommandListWorlds(mod));
@@ -75,16 +75,17 @@ public class CommandHandler implements ICommand {
 			return;
 		}
 
-		if (args[0].equals("tps")) {
+		switch (args[0]) {
+			case "tps":
 
-			sender.sendMessage(new TextComponentString("Average TPS: " + getTPSFormatted(mod) + " TPS"));
-			return;
-		} else if (args[0].equals("identify")) {
-			sender.sendMessage(new TextComponentString("Command not yet implemented! This will allow you to check what group a Tile or Entity belongs to by right clicking it.(And other info, like TPS)"));
-			return;
-		} else if (args[0].equals("help")) {
-			sender.sendMessage(new TextComponentString("You can find the documentation over at http://mods.stjerncraft.com/tickdynamic"));
-			return;
+				sender.sendMessage(new TextComponentString("Average TPS: " + getTPSFormatted(mod) + " TPS"));
+				return;
+			case "identify":
+				sender.sendMessage(new TextComponentString("Command not yet implemented! This will allow you to check what group a Tile or Entity belongs to by right clicking it.(And other info, like TPS)"));
+				return;
+			case "help":
+				sender.sendMessage(new TextComponentString("You can find the documentation over at http://mods.stjerncraft.com/tickdynamic"));
+				return;
 		}
 
 		//Send it over to subCommand handler

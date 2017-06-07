@@ -115,7 +115,7 @@ public class PatchParser {
 	public static class CommandToken {
 		public TokenType type; //The type of token
 		public String text; //Any text bound to this command
-		public List<ReplacementToken> replacementTokens = new ArrayList<ReplacementToken>(); //Tokens where text will be replaced, and also tokens for raw text
+		public List<ReplacementToken> replacementTokens = new ArrayList<>(); //Tokens where text will be replaced, and also tokens for raw text
 		public static int tokenCounter = 0;
 		public int tokenId;
 
@@ -150,7 +150,7 @@ public class PatchParser {
 
 	//Parse the patch, throws an exception on failure
 	public void parsePatch(String patch) throws Exception {
-		tokens = new ArrayList<CommandToken>();
+		tokens = new ArrayList<>();
 
 		patch = patch.replace("\r", ""); //normalize newline
 
@@ -235,8 +235,7 @@ public class PatchParser {
 		System.out.println("Done parsing step 1");
 
 		//Parse the replacement tokens inside each command
-		for (Iterator<CommandToken> it = tokens.iterator(); it.hasNext(); ) {
-			CommandToken token = it.next();
+		for (CommandToken token : tokens) {
 			StringBuilder str = new StringBuilder(token.text);
 
 			int startIndex = 0; //Used for creating text tokens
@@ -320,8 +319,7 @@ public class PatchParser {
 				token.replacementTokens.add(new ReplacementToken(TokenType.Text, str.substring(startIndex)));
 
 			System.out.println("Replacements for " + token.type + ": ");
-			for (Iterator<ReplacementToken> ita = token.replacementTokens.iterator(); ita.hasNext(); ) {
-				ReplacementToken t = ita.next();
+			for (ReplacementToken t : token.replacementTokens) {
 				System.out.println("- " + t.type + " :: " + t.var);
 			}
 
@@ -332,7 +330,7 @@ public class PatchParser {
 	public String patch(String basee) throws Exception {
 		basee = basee.replace("\r", ""); //normalize newline
 		StringBuilder output = new StringBuilder(basee); //Our patched base
-		variableMap = new HashMap<String, String>();
+		variableMap = new HashMap<>();
 		Pattern pattern;
 		Matcher matcher;
 		int startIndex;
@@ -348,7 +346,7 @@ public class PatchParser {
 
 			if (token.type == TokenType.CommandOrigin) {
 				StringBuilder regEx = new StringBuilder();
-				Map<String, Boolean> varSet = new HashMap<String, Boolean>();
+				Map<String, Boolean> varSet = new HashMap<>();
 				generateReplacementRegEx(token, regEx, varSet);
 				pattern = Pattern.compile(regEx.toString());
 				matcher = pattern.matcher(output);
@@ -358,7 +356,7 @@ public class PatchParser {
 				continue;
 			} else if (token.type == TokenType.CommandLimit) {
 				StringBuilder regEx = new StringBuilder();
-				Map<String, Boolean> varSet = new HashMap<String, Boolean>();
+				Map<String, Boolean> varSet = new HashMap<>();
 				generateReplacementRegEx(token, regEx, varSet);
 				pattern = Pattern.compile(regEx.toString());
 				matcher = pattern.matcher(output);
@@ -379,7 +377,7 @@ public class PatchParser {
 
 			//Generate the detection RegEx
 			StringBuilder detectionRegEx = new StringBuilder();
-			Map<String, Boolean> varSet = new HashMap<String, Boolean>();
+			Map<String, Boolean> varSet = new HashMap<>();
 			boolean ended = false;
 			for (; i < tokens.size(); i++) {
 				token = tokens.get(i);
@@ -399,7 +397,7 @@ public class PatchParser {
 				if (token.type == TokenType.CommandStart)
 					detectionRegEx.append("("); //Start number group for later position reference
 				else
-					detectionRegEx.append("(?<t" + token.tokenId + ">");
+					detectionRegEx.append("(?<t").append(token.tokenId).append(">");
 				generateReplacementRegEx(token, detectionRegEx, varSet);
 				detectionRegEx.append(")");
 
@@ -409,7 +407,7 @@ public class PatchParser {
 				}
 			}
 
-			if (ended != true)
+			if (!ended)
 				throw new Exception("Reached end of stream without End command!");
 
 			System.out.println("(" + token.type + ") RegEx: " + detectionRegEx.toString());
@@ -422,8 +420,7 @@ public class PatchParser {
 				throw new Exception("Failed to match: '" + detectionRegEx.toString() + "'\nOn base: '" + subBase + "'");
 
 			//Read back any set variables
-			for (Iterator<String> it = varSet.keySet().iterator(); it.hasNext(); ) {
-				String varName = it.next();
+			for (String varName : varSet.keySet()) {
 				String varValue = matcher.group(varName);
 				if (varValue == null)
 					throw new Exception("Variable '" + varName + "' was marked as set, but was null!");
@@ -456,8 +453,7 @@ public class PatchParser {
 				if (token.type != TokenType.CommandAdd)
 					continue;
 
-				for (Iterator<ReplacementToken> it = token.replacementTokens.iterator(); it.hasNext(); ) {
-					ReplacementToken repToken = it.next();
+				for (ReplacementToken repToken : token.replacementTokens) {
 					String in;
 					if (repToken.type == TokenType.Text)
 						in = (String) repToken.var;

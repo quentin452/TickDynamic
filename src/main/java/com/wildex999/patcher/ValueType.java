@@ -14,7 +14,6 @@ public class ValueType {
 		TType
 	}
 
-	;
 	public Type type;
 	public Object value;
 }
