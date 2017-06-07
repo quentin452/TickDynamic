@@ -24,7 +24,7 @@ apply plugin: 'net.cazzar.gradle.modsio'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
-version = "0.5.0"
+version = "0.5.1"
 group= "com.wildex999.tickdynamic"
 archivesBaseName = "TickDynamic-1.11.2"
 
@@ -116,9 +116,6 @@ curseforge {
 	addGameVersion 'Java 8'
     mainArtifact(jar) {
         displayName = jar.archiveName.replace(".jar", "")
-        relations{
-			requiredLibrary 'guide-api'
-		}
     }
     addArtifact(sourceJar) {
         displayName = sourceJar.archiveName.replace(".jar", "")
@@ -135,7 +132,7 @@ modsIO {
     key = project.hasProperty("modsioApiKey")? project.modsioApiKey : "empty"
     project{
 		artifact = new File(jar.destinationDir, archivesBaseName+"-"+version+".jar")
-		modid = "0000"
+		modid = "1265"
 		minecraft = "1.11.2"
 		try{changelog = file('changelog.txt').text}catch(Exception e){changelog=""}
 		tag = "beta"
