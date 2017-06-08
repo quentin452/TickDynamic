@@ -1,6 +1,5 @@
 package com.wildex999.tickdynamic.commands;
 
-import com.mojang.realmsclient.gui.ChatFormatting;
 import com.wildex999.tickdynamic.TickDynamicMod;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
@@ -8,6 +7,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -91,7 +91,7 @@ public class CommandHandler implements ICommand {
 		//Send it over to subCommand handler
 		ICommand subHandler = subCommandHandlers.get(args[0]);
 		if (subHandler == null) {
-			sender.sendMessage(new TextComponentString(ChatFormatting.RED + "No handler for the command " + ChatFormatting.ITALIC + args[0]));
+			sender.sendMessage(new TextComponentString(TextFormatting.RED + "No handler for the command " + TextFormatting.ITALIC + args[0]));
 			return;
 		}
 		subHandler.execute(server, sender, args);
@@ -140,14 +140,14 @@ public class CommandHandler implements ICommand {
 		String color;
 
 		if (mod.averageTPS >= 19)
-			color = ChatFormatting.GREEN.toString();
+			color = TextFormatting.GREEN.toString();
 		else if (mod.averageTPS > 10)
-			color = ChatFormatting.YELLOW.toString();
+			color = TextFormatting.YELLOW.toString();
 		else
-			color = ChatFormatting.RED.toString();
+			color = TextFormatting.RED.toString();
 
 		DecimalFormat tpsFormat = new DecimalFormat("#.00");
-		tpsOut = color + tpsFormat.format(mod.averageTPS) + ChatFormatting.RESET;
+		tpsOut = color + tpsFormat.format(mod.averageTPS) + TextFormatting.RESET;
 		return tpsOut;
 	}
 

@@ -1,6 +1,5 @@
 package com.wildex999.tickdynamic.commands;
 
-import com.mojang.realmsclient.gui.ChatFormatting;
 import com.wildex999.tickdynamic.TickDynamicMod;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.command.ICommand;
@@ -8,6 +7,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
@@ -49,28 +49,28 @@ public class CommandEnabled implements ICommand {
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 		if (args.length == 1) {
 			if (mod.enabled)
-				sender.sendMessage(new TextComponentString("Tick Dynamic is currently " + ChatFormatting.GREEN + " Enabled!"));
+				sender.sendMessage(new TextComponentString("Tick Dynamic is currently " + TextFormatting.GREEN + " Enabled!"));
 			else
-				sender.sendMessage(new TextComponentString("Tick Dynamic is currently " + ChatFormatting.RED + " Disabled!"));
+				sender.sendMessage(new TextComponentString("Tick Dynamic is currently " + TextFormatting.RED + " Disabled!"));
 			sender.sendMessage(new TextComponentString("Usage: " + getUsage(sender)));
 			return;
 		}
 
 		if (args[1].equals("yes") || args[1].equals("y")) {
 			if (mod.enabled) {
-				sender.sendMessage(new TextComponentString(ChatFormatting.GREEN + "Tick Dynamic is already enabled!"));
+				sender.sendMessage(new TextComponentString(TextFormatting.GREEN + "Tick Dynamic is already enabled!"));
 				return;
 			}
 			mod.enabled = true;
-			sender.sendMessage(new TextComponentString("Tick Dynamic is now " + ChatFormatting.GREEN + "Enabled!"));
+			sender.sendMessage(new TextComponentString("Tick Dynamic is now " + TextFormatting.GREEN + "Enabled!"));
 			return;
 		} else if (args[1].equals("no") || args[1].equals("n")) {
 			if (!mod.enabled) {
-				sender.sendMessage(new TextComponentString(ChatFormatting.RED + "Tick Dynamic is already disabled!"));
+				sender.sendMessage(new TextComponentString(TextFormatting.RED + "Tick Dynamic is already disabled!"));
 				return;
 			}
 			mod.enabled = false;
-			sender.sendMessage(new TextComponentString("Tick Dynamic is now " + ChatFormatting.RED + "Disabled!"));
+			sender.sendMessage(new TextComponentString("Tick Dynamic is now " + TextFormatting.RED + "Disabled!"));
 			return;
 		}
 

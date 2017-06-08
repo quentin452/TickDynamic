@@ -1,6 +1,5 @@
 package com.wildex999.tickdynamic.commands;
 
-import com.mojang.realmsclient.gui.ChatFormatting;
 import com.wildex999.tickdynamic.TickDynamicMod;
 import com.wildex999.tickdynamic.timemanager.TimeManager;
 import com.wildex999.tickdynamic.timemanager.TimedGroup;
@@ -9,6 +8,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.WorldServer;
 import org.apache.commons.lang3.StringUtils;
 
@@ -72,11 +72,11 @@ public class CommandListWorlds implements ICommand {
 			try {
 				currentPage = Integer.parseInt(args[1]);
 				if (currentPage <= 0) {
-					sender.sendMessage(new TextComponentString(ChatFormatting.RED + "Page number must be 1 and up, got: " + args[1]));
+					sender.sendMessage(new TextComponentString(TextFormatting.RED + "Page number must be 1 and up, got: " + args[1]));
 					currentPage = 1;
 				}
 			} catch (Exception e) {
-				sender.sendMessage(new TextComponentString(ChatFormatting.RED + "Expected a page number, got: " + args[1]));
+				sender.sendMessage(new TextComponentString(TextFormatting.RED + "Expected a page number, got: " + args[1]));
 				return;
 			}
 		}
@@ -108,30 +108,30 @@ public class CommandListWorlds implements ICommand {
 			if (world == null || worldManager == null)
 				continue;
 
-			outputBuilder.append(ChatFormatting.GRAY + "| ").append(ChatFormatting.RESET).append(world.provider.getDimensionType().getName());
+			outputBuilder.append(TextFormatting.GRAY + "| ").append(TextFormatting.RESET).append(world.provider.getDimensionType().getName());
 			String usedTime = decimalFormat.format(worldManager.getTimeUsedAverage() / (double) TimeManager.timeMilisecond);
 			String maxTime = decimalFormat.format(worldManager.getTimeMax() / (double) TimeManager.timeMilisecond);
-			outputBuilder.append(ChatFormatting.GRAY + " || ").append(ChatFormatting.RESET).append(usedTime).append("/").append(maxTime);
-			outputBuilder.append(ChatFormatting.GRAY + " || ").append(ChatFormatting.RESET).append(worldManager.getSliceMax()).append("\n");
+			outputBuilder.append(TextFormatting.GRAY + " || ").append(TextFormatting.RESET).append(usedTime).append("/").append(maxTime);
+			outputBuilder.append(TextFormatting.GRAY + " || ").append(TextFormatting.RESET).append(worldManager.getSliceMax()).append("\n");
 		}
 
 		if (currentPage == maxPages) {
 			//Add Other
 			TimedGroup other = mod.getTimedGroup("other");
 			if (other != null) {
-				outputBuilder.append(ChatFormatting.GRAY + "| ").append(ChatFormatting.RESET + "(Other)");
+				outputBuilder.append(TextFormatting.GRAY + "| ").append(TextFormatting.RESET + "(Other)");
 				String usedTime = decimalFormat.format(other.getTimeUsedAverage() / (double) TimeManager.timeMilisecond);
-				outputBuilder.append(ChatFormatting.GRAY + " || ").append(ChatFormatting.RESET).append(usedTime);
-				outputBuilder.append(ChatFormatting.GRAY + " || ").append(ChatFormatting.RESET).append("N/A\n");
+				outputBuilder.append(TextFormatting.GRAY + " || ").append(TextFormatting.RESET).append(usedTime);
+				outputBuilder.append(TextFormatting.GRAY + " || ").append(TextFormatting.RESET).append("N/A\n");
 			}
 
 			//Add External
 			TimedGroup external = mod.getTimedGroup("external");
 			if (other != null) {
-				outputBuilder.append(ChatFormatting.GRAY + "| ").append(ChatFormatting.RESET + "(External)");
+				outputBuilder.append(TextFormatting.GRAY + "| ").append(TextFormatting.RESET + "(External)");
 				String usedTime = decimalFormat.format(external.getTimeUsedAverage() / (double) TimeManager.timeMilisecond);
-				outputBuilder.append(ChatFormatting.GRAY + " || ").append(ChatFormatting.RESET).append(usedTime);
-				outputBuilder.append(ChatFormatting.GRAY + " || ").append(ChatFormatting.RESET).append("N/A\n");
+				outputBuilder.append(TextFormatting.GRAY + " || ").append(TextFormatting.RESET).append(usedTime);
+				outputBuilder.append(TextFormatting.GRAY + " || ").append(TextFormatting.RESET).append("N/A\n");
 			}
 		}
 
@@ -141,26 +141,26 @@ public class CommandListWorlds implements ICommand {
 	}
 
 	public void writeHeader(StringBuilder builder) {
-		builder.append(ChatFormatting.GREEN + "Worlds list with time. Usage: tickdynamic worldList [page]\n");
+		builder.append(TextFormatting.GREEN + "Worlds list with time. Usage: tickdynamic worldList [page]\n");
 
-		builder.append(ChatFormatting.GRAY + "+").append(StringUtils.repeat("=", borderWidth)).append("+\n");
-		builder.append(ChatFormatting.GRAY + "| ").append(ChatFormatting.GOLD + "World").append(ChatFormatting.GRAY);
+		builder.append(TextFormatting.GRAY + "+").append(StringUtils.repeat("=", borderWidth)).append("+\n");
+		builder.append(TextFormatting.GRAY + "| ").append(TextFormatting.GOLD + "World").append(TextFormatting.GRAY);
 
-		builder.append(" || ").append(ChatFormatting.GOLD + "Time(Used/Allocated)").append(ChatFormatting.GRAY);
-		builder.append(" || ").append(ChatFormatting.GOLD + "MaxSlices").append(ChatFormatting.GRAY);
+		builder.append(" || ").append(TextFormatting.GOLD + "Time(Used/Allocated)").append(TextFormatting.GRAY);
+		builder.append(" || ").append(TextFormatting.GOLD + "MaxSlices").append(TextFormatting.GRAY);
 		builder.append("\n");
 	}
 
 	public void writeFooter(StringBuilder builder) {
 		if (maxPages == 0)
-			builder.append(ChatFormatting.GRAY + "+").append(StringUtils.repeat("=", borderWidth)).append("+\n");
+			builder.append(TextFormatting.GRAY + "+").append(StringUtils.repeat("=", borderWidth)).append("+\n");
 		else {
-			String pagesStr = ChatFormatting.GREEN + "Page " + currentPage + "/" + maxPages;
+			String pagesStr = TextFormatting.GREEN + "Page " + currentPage + "/" + maxPages;
 			int pagesLength = getVisibleLength(pagesStr);
 			int otherLength = borderWidth - pagesLength;
-			builder.append(ChatFormatting.GRAY + "+").append(StringUtils.repeat("=", otherLength / 2));
+			builder.append(TextFormatting.GRAY + "+").append(StringUtils.repeat("=", otherLength / 2));
 			builder.append(pagesStr);
-			builder.append(ChatFormatting.GRAY).append(StringUtils.repeat("=", otherLength / 2)).append("+\n");
+			builder.append(TextFormatting.GRAY).append(StringUtils.repeat("=", otherLength / 2)).append("+\n");
 		}
 	}
 

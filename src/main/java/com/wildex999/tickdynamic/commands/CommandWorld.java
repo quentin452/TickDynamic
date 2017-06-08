@@ -1,6 +1,5 @@
 package com.wildex999.tickdynamic.commands;
 
-import com.mojang.realmsclient.gui.ChatFormatting;
 import com.wildex999.tickdynamic.TickDynamicMod;
 import com.wildex999.tickdynamic.listinject.EntityGroup;
 import com.wildex999.tickdynamic.listinject.ListManager;
@@ -11,6 +10,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import org.apache.commons.lang3.StringUtils;
@@ -67,11 +67,11 @@ public class CommandWorld implements ICommand {
 			try {
 				currentPage = Integer.parseInt(args[2]);
 				if (currentPage <= 0) {
-					sender.sendMessage(new TextComponentString(ChatFormatting.RED + "Page number must be 1 and up, got: " + args[2]));
+					sender.sendMessage(new TextComponentString(TextFormatting.RED + "Page number must be 1 and up, got: " + args[2]));
 					currentPage = 1;
 				}
 			} catch (Exception e) {
-				sender.sendMessage(new TextComponentString(ChatFormatting.RED + "Expected a page number, got: " + args[2]));
+				sender.sendMessage(new TextComponentString(TextFormatting.RED + "Expected a page number, got: " + args[2]));
 				return;
 			}
 		}
@@ -85,13 +85,13 @@ public class CommandWorld implements ICommand {
 		try {
 			worldDim = Integer.parseInt(worldDimStr);
 		} catch (Exception e) {
-			sender.sendMessage(new TextComponentString(ChatFormatting.RED + "Expected a world dimension(Ex: dim0 or just 0), got: " + worldDimStr));
+			sender.sendMessage(new TextComponentString(TextFormatting.RED + "Expected a world dimension(Ex: dim0 or just 0), got: " + worldDimStr));
 			return;
 		}
 		world = DimensionManager.getWorld(worldDim);
 
 		if (world == null) {
-			sender.sendMessage(new TextComponentString(ChatFormatting.RED + "No world with dimension id: " + worldDimStr));
+			sender.sendMessage(new TextComponentString(TextFormatting.RED + "No world with dimension id: " + worldDimStr));
 			return;
 		}
 
@@ -146,60 +146,60 @@ public class CommandWorld implements ICommand {
 	}
 
 	private void writeHeader(StringBuilder builder) {
-		builder.append(ChatFormatting.GREEN + "Groups for world: ").append(ChatFormatting.RESET).append(world.provider.getDimensionType().getName()).
+		builder.append(TextFormatting.GREEN + "Groups for world: ").append(TextFormatting.RESET).append(world.provider.getDimensionType().getName()).
 				append("(DIM: ").append(world.provider.getDimension()).append(")\n");
 
-		builder.append(ChatFormatting.GRAY + "+").append(StringUtils.repeat("=", borderWidth)).append("+\n");
-		builder.append(ChatFormatting.GRAY + "| ").append(ChatFormatting.GOLD + "Group").append(ChatFormatting.GRAY);
+		builder.append(TextFormatting.GRAY + "+").append(StringUtils.repeat("=", borderWidth)).append("+\n");
+		builder.append(TextFormatting.GRAY + "| ").append(TextFormatting.GOLD + "Group").append(TextFormatting.GRAY);
 
-		builder.append(" || ").append(ChatFormatting.GOLD + "Time(Avg.)").append(ChatFormatting.GRAY);
-		builder.append(" || ").append(ChatFormatting.GOLD + "EntitiesRun(Avg.)").append(ChatFormatting.GRAY);
-		builder.append(" || ").append(ChatFormatting.GOLD + "MaxSlices").append(ChatFormatting.GRAY);
-		builder.append(" || ").append(ChatFormatting.GOLD + "TPS(Avg.)").append(ChatFormatting.GRAY);
+		builder.append(" || ").append(TextFormatting.GOLD + "Time(Avg.)").append(TextFormatting.GRAY);
+		builder.append(" || ").append(TextFormatting.GOLD + "EntitiesRun(Avg.)").append(TextFormatting.GRAY);
+		builder.append(" || ").append(TextFormatting.GOLD + "MaxSlices").append(TextFormatting.GRAY);
+		builder.append(" || ").append(TextFormatting.GOLD + "TPS(Avg.)").append(TextFormatting.GRAY);
 		builder.append("\n");
 	}
 
 	private void writeGroup(StringBuilder builder, EntityGroup group) {
 		TimedEntities timedGroup = group.timedGroup;
-		builder.append(ChatFormatting.GRAY + "| ").append(ChatFormatting.RESET).append(group.getName());
+		builder.append(TextFormatting.GRAY + "| ").append(TextFormatting.RESET).append(group.getName());
 
 		if (timedGroup == null) { //No Timed data
-			builder.append(ChatFormatting.RED + " N/A\n");
+			builder.append(TextFormatting.RED + " N/A\n");
 			return;
 		}
 
 		String usedTime = decimalFormat.format(timedGroup.getTimeUsedAverage() / (double) TimeManager.timeMilisecond);
 		String maxTime = decimalFormat.format(timedGroup.getTimeMax() / (double) TimeManager.timeMilisecond);
-		builder.append(ChatFormatting.GRAY + " || ").append(ChatFormatting.RESET).append(usedTime).append("/").append(maxTime);
+		builder.append(TextFormatting.GRAY + " || ").append(TextFormatting.RESET).append(usedTime).append("/").append(maxTime);
 
 		int runObjects = timedGroup.getObjectsRunAverage();
 		int countObjects = group.entities.size();
-		builder.append(ChatFormatting.GRAY + " || ").append(ChatFormatting.RESET).append(runObjects).append("/").append(countObjects);
-		builder.append(ChatFormatting.GRAY + " || ").append(ChatFormatting.RESET).append(timedGroup.getSliceMax());
+		builder.append(TextFormatting.GRAY + " || ").append(TextFormatting.RESET).append(runObjects).append("/").append(countObjects);
+		builder.append(TextFormatting.GRAY + " || ").append(TextFormatting.RESET).append(timedGroup.getSliceMax());
 
 		//TPS coloring
 		String color;
 		if (timedGroup.averageTPS >= 19)
-			color = ChatFormatting.GREEN.toString();
+			color = TextFormatting.GREEN.toString();
 		else if (timedGroup.averageTPS > 10)
-			color = ChatFormatting.YELLOW.toString();
+			color = TextFormatting.YELLOW.toString();
 		else
-			color = ChatFormatting.RED.toString();
-		builder.append(ChatFormatting.GRAY + " || ").append(color).append(decimalFormat.format(timedGroup.averageTPS)).append(ChatFormatting.RESET + "TPS");
+			color = TextFormatting.RED.toString();
+		builder.append(TextFormatting.GRAY + " || ").append(color).append(decimalFormat.format(timedGroup.averageTPS)).append(TextFormatting.RESET + "TPS");
 
 		builder.append("\n");
 	}
 
 	private void writeFooter(StringBuilder builder) {
 		if (maxPages == 0)
-			builder.append(ChatFormatting.GRAY + "+").append(StringUtils.repeat("=", borderWidth)).append("+\n");
+			builder.append(TextFormatting.GRAY + "+").append(StringUtils.repeat("=", borderWidth)).append("+\n");
 		else {
-			String pagesStr = ChatFormatting.GREEN + "Page " + currentPage + "/" + maxPages;
+			String pagesStr = TextFormatting.GREEN + "Page " + currentPage + "/" + maxPages;
 			int pagesLength = getVisibleLength(pagesStr);
 			int otherLength = borderWidth - pagesLength;
-			builder.append(ChatFormatting.GRAY + "+").append(StringUtils.repeat("=", otherLength / 2));
+			builder.append(TextFormatting.GRAY + "+").append(StringUtils.repeat("=", otherLength / 2));
 			builder.append(pagesStr);
-			builder.append(ChatFormatting.GRAY).append(StringUtils.repeat("=", otherLength / 2)).append("+\n");
+			builder.append(TextFormatting.GRAY).append(StringUtils.repeat("=", otherLength / 2)).append("+\n");
 		}
 	}
 
