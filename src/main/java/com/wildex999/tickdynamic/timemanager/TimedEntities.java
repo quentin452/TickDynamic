@@ -145,7 +145,7 @@ public class TimedEntities extends TimedGroup {
 
 		double timePerObject = (int) Math.ceil((double) getTimeUsedAverage() / (double) getObjectsRunAverage());
 		if (TickDynamicMod.debugTimer)
-			System.out.println(name + ": getTargetObjectCount: timeUsed:" + getTimeUsedAverage() + " objectsRun: " + getObjectsRunAverage() + " timePerObject: " + timePerObject + " timeMax: " + timeMax);
+			TickDynamicMod.logTrace(name + ": getTargetObjectCount: timeUsed:" + getTimeUsedAverage() + " objectsRun: " + getObjectsRunAverage() + " timePerObject: " + timePerObject + " timeMax: " + timeMax);
 		return (int) Math.ceil(timeMax / timePerObject);
 	}
 
@@ -175,8 +175,7 @@ public class TimedEntities extends TimedGroup {
 	//Return: The starting offset
 	public int startUpdateObjects() {
 		if (entityGroup == null) {
-			if (TickDynamicMod.debug)
-				System.err.println("No EntityGroup for group:" + this.getName());
+			TickDynamicMod.logDebug("No EntityGroup for group:" + this.getName());
 			return 0; //No entities to time
 		}
 
@@ -200,7 +199,7 @@ public class TimedEntities extends TimedGroup {
 		if (currentObjectIndex >= listSize)
 			currentObjectIndex = 0;
 		if (TickDynamicMod.debugTimer)
-			System.out.println("Start (" + name + "). Update Offset: " + currentObjectIndex + " | "
+			TickDynamicMod.logTrace("Start (" + name + "). Update Offset: " + currentObjectIndex + " | "
 					+ "Updating: " + updateCount + " of " + listSize);
 
 		return currentObjectIndex;

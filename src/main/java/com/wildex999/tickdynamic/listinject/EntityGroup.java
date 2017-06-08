@@ -52,7 +52,7 @@ public class EntityGroup {
 	//groupType will be overwritten by config if it already has an entry
 	public EntityGroup(World world, TimedEntities timedGroup, String name, String configEntry, EntityType groupType, EntityGroup base) {
 		if (timedGroup == null && base != null)
-			System.err.println("Assertion failed: Created EntityGroup with a null TimedGroup!");
+			TickDynamicMod.logError("Assertion failed: Created EntityGroup with a null TimedGroup!");
 
 		if (name != null)
 			this.name = name;
@@ -233,7 +233,7 @@ public class EntityGroup {
 		for (String name : names) {
 			List<Class> tileClassList = loadTilesByName(name);
 			if (tileClassList == null) {
-				System.out.println("Failed to find Block with the name: " + name);
+				TickDynamicMod.logError("Failed to find Block with the name: " + name);
 				continue;
 			}
 			if (tileClassList.size() == 0)
@@ -242,8 +242,7 @@ public class EntityGroup {
 			for (Class tileClass : tileClassList) {
 				if (entityEntries.contains(tileClass))
 					continue;
-				if (TickDynamicMod.debug)
-					System.out.println("Found TileEntity: " + tileClass);
+				TickDynamicMod.logDebug("Found TileEntity: " + tileClass);
 				entityEntries.add(tileClass);
 			}
 		}
@@ -258,13 +257,12 @@ public class EntityGroup {
 		for (String name : names) {
 			Class entityClass = loadEntityByName(name);
 			if (entityClass == null) {
-				System.out.println("Failed to find an Entity by the name: " + name);
+				TickDynamicMod.logWarn("Failed to find an Entity by the name: " + name);
 				continue;
 			}
 			if (entityEntries.contains(entityClass))
 				continue;
-			if (TickDynamicMod.debug)
-				System.out.println("Found Entity: " + entityClass);
+			TickDynamicMod.logDebug("Found Entity: " + entityClass);
 			entityEntries.add(entityClass);
 		}
 	}
@@ -287,8 +285,7 @@ public class EntityGroup {
 				try {
 					currentTile = block.createTileEntity(world, state);
 				} catch (Exception e) {
-					if (TickDynamicMod.debug)
-						System.out.println("Exception while loading Tile for " + name + ":\n" + e.getMessage());
+					TickDynamicMod.logDebug("Exception while loading Tile for " + name + ":\n" + e.getMessage());
 					currentTile = null;
 				}
 
@@ -320,14 +317,13 @@ public class EntityGroup {
 		for (String name : names) {
 			Class entityClass = loadByClassName(name);
 			if (entityClass == null || !TileEntity.class.isAssignableFrom(entityClass)) {
-				System.out.println("Could not find TileEntity class with the name: " + name);
+				TickDynamicMod.logWarn("Could not find TileEntity class with the name: " + name);
 				continue;
 			}
 			if (entityEntries.contains(entityClass))
 				continue;
 
-			if (TickDynamicMod.debug)
-				System.out.println("Found TileEntity class: " + entityClass);
+			TickDynamicMod.logDebug("Found TileEntity class: " + entityClass);
 			entityEntries.add(entityClass);
 		}
 	}
@@ -341,14 +337,13 @@ public class EntityGroup {
 		for (String name : names) {
 			Class entityClass = loadByClassName(name);
 			if (entityClass == null || !Entity.class.isAssignableFrom(entityClass)) {
-				System.out.println("Could not find Entity class with the name: " + name + " Class: " + entityClass);
+				TickDynamicMod.logWarn("Could not find Entity class with the name: " + name + " Class: " + entityClass);
 				continue;
 			}
 			if (entityEntries.contains(entityClass))
 				continue;
 
-			if (TickDynamicMod.debug)
-				System.out.println("Found Entity class: " + entityClass);
+			TickDynamicMod.logDebug("Found Entity class: " + entityClass);
 			entityEntries.add(entityClass);
 		}
 	}

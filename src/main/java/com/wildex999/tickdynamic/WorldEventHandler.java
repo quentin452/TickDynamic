@@ -45,14 +45,13 @@ public class WorldEventHandler {
 			return;
 
 		//Register our own Entity List manager, copying over any existing Entities
-		if (TickDynamicMod.debug)
-			System.out.println("World load: " + event.getWorld().provider.getDimensionType().getName());
+		TickDynamicMod.logDebug("World load: " + event.getWorld().provider.getDimensionType().getName());
 
 		//Inject Custom Profiler for watching Entity ticking
 		try {
 			setCustomProfiler(event.getWorld(), new CustomProfiler(event.getWorld().profiler));
 		} catch (Exception e) {
-			System.err.println("Unable to set TickDynamic World profiler! World will not be using TickDynamic: " + event.getWorld());
+			TickDynamicMod.logError("Unable to set TickDynamic World profiler! World will not be using TickDynamic: " + event.getWorld());
 			e.printStackTrace();
 			return; //Do not add TickDynamic to world
 		}
@@ -63,15 +62,13 @@ public class WorldEventHandler {
 		tileListManager.put(event.getWorld(), tileEntityManager);
 
 		//Overwrite existing lists, copying any loaded Entities
-		if (TickDynamicMod.debug)
-			System.out.println("Adding " + event.getWorld().loadedEntityList.size() + " existing Entities.");
+		TickDynamicMod.logDebug("Adding " + event.getWorld().loadedEntityList.size() + " existing Entities.");
 		List<? extends EntityObject> oldList = event.getWorld().loadedEntityList;
 		ReflectionHelper.setPrivateValue(World.class, event.getWorld(), entityManager, "loadedEntityList", "field_72996_f");
 		entityManager.addAll(oldList);
 
 		//Tiles
-		if (TickDynamicMod.debug)
-			System.out.println("Adding " + event.getWorld().tickableTileEntities.size() + " existing TileEntities.");
+		TickDynamicMod.logDebug("Adding " + event.getWorld().tickableTileEntities.size() + " existing TileEntities.");
 		oldList = event.getWorld().tickableTileEntities;
 		ReflectionHelper.setPrivateValue(World.class, event.getWorld(), tileEntityManager, "tickableTileEntities", "field_175730_i");
 		tileEntityManager.addAll(oldList);
@@ -83,14 +80,13 @@ public class WorldEventHandler {
 		if (event.getWorld() == null || event.getWorld().isRemote)
 			return;
 
-		if (TickDynamicMod.debug)
-			System.out.println("TickDynamic unloading injected lists for world: " + event.getWorld().provider.getDimensionType().getName());
+		TickDynamicMod.logDebug("TickDynamic unloading injected lists for world: " + event.getWorld().provider.getDimensionType().getName());
 
 		try {
 			CustomProfiler customProfiler = (CustomProfiler) event.getWorld().profiler;
 			setCustomProfiler(event.getWorld(), customProfiler.original);
 		} catch (Exception e) {
-			System.err.println("Failed to revert World Profiler to original");
+			TickDynamicMod.logError("Failed to revert World Profiler to original");
 			e.printStackTrace();
 		}
 

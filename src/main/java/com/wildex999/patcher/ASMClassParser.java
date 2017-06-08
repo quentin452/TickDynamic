@@ -1,6 +1,7 @@
 package com.wildex999.patcher;
 
 import com.google.common.primitives.Ints;
+import com.wildex999.tickdynamic.TickDynamicMod;
 import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.*;
 
@@ -91,7 +92,7 @@ public class ASMClassParser {
 			tokens.add(newToken);
 		}
 		currentToken = -1; //first nextToken will get the first token
-		System.out.println("Tokens: " + tokens.size());
+		TickDynamicMod.logInfo("Tokens: " + tokens.size());
 
 		//Parse Class header
 		parseClassVersion();
@@ -239,7 +240,7 @@ public class ASMClassParser {
 		switch (version) {
 			case 50:
 				classVersion = Opcodes.V1_6;
-				System.out.println("V1_6");
+				TickDynamicMod.logInfo("V1_6");
 				break;
 			case 51:
 				classVersion = Opcodes.V1_7;
@@ -309,7 +310,7 @@ public class ASMClassParser {
 		if (superClassName == null)
 			superClassName = "java/lang/Object";
 
-		System.out.println("Writing class header:"
+		TickDynamicMod.logInfo("Writing class header:"
 				+ "\nAccess: " + Integer.toHexString(access).toUpperCase()
 				+ "\nName: " + className
 				+ "\nSuper class: " + superClassName

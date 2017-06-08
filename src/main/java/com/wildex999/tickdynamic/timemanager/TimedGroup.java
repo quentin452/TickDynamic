@@ -93,7 +93,7 @@ public class TimedGroup implements ITimed {
 	@Override
 	public void setTimeMax(long newTimeMax) {
 		if (TickDynamicMod.debugTimer)
-			System.out.println(name + ": setTimeMax: " + newTimeMax + " timeUsed: " + timeUsed);
+			TickDynamicMod.logTrace(name + ": setTimeMax: " + newTimeMax + " timeUsed: " + timeUsed);
 		timeMax = newTimeMax;
 	}
 

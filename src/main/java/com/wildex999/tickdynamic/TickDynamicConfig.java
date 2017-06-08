@@ -44,7 +44,7 @@ public class TickDynamicConfig {
 
 		mod.enabled = mod.config.get("general", "enabled", true, "").getBoolean();
 
-		mod.debug = mod.config.get("general", "debug", mod.debug, "Debug output. Warning: Might output a lot of data to console!").getBoolean();
+		//mod.debug = mod.config.get("general", "debug", mod.debug, "Debug output. Warning: Might output a lot of data to console!").getBoolean();
 
 		mod.debugGroups = mod.config.get("general", "debugGroups", mod.debugGroups, "Debug Group mapping and assignment. Will spam during world load and config reload!!!").getBoolean();
 
@@ -92,25 +92,21 @@ public class TickDynamicConfig {
 			//Reload local groups
 			WorldServer[] worlds = DimensionManager.getWorlds();
 			for (WorldServer world : worlds) {
-				if (mod.debug)
-					System.out.println("Reloading " + world.provider.getDimensionType().getName());
+				TickDynamicMod.logDebug("Reloading " + world.provider.getDimensionType().getName());
 
 				if (world.loadedEntityList instanceof ListManager) {
 					ListManager entityList = (ListManager) world.loadedEntityList;
-					if (mod.debug)
-						System.out.println("Reloading " + entityList.size() + " Entities...");
+					TickDynamicMod.logDebug("Reloading " + entityList.size() + " Entities...");
 					entityList.reloadGroups();
 				}
 				if (world.loadedTileEntityList instanceof ListManager) {
 					ListManager tileList = (ListManager) world.loadedTileEntityList;
-					if (mod.debug)
-						System.out.println("Reloading " + tileList.size() + " TileEntities...");
+					TickDynamicMod.logDebug("Reloading " + tileList.size() + " TileEntities...");
 					tileList.reloadGroups();
 				}
 			}
 
-			if (mod.debug)
-				System.out.println("Done reloading worlds");
+			TickDynamicMod.logDebug("Done reloading worlds");
 
 			//Reload Timed
 			for (ITimed timed : mod.timedObjects.values()) {
@@ -187,8 +183,7 @@ public class TickDynamicConfig {
 
 			//Mark for removal after loop
 			if (remove) {
-				if (TickDynamicMod.debug)
-					System.out.println("Remove Group: " + groupPath);
+				TickDynamicMod.logDebug("Remove Group: " + groupPath);
 				toRemove.add(groupPath);
 			}
 		}
@@ -207,8 +202,7 @@ public class TickDynamicConfig {
 			String groupPath = category + "." + group.getName();
 			EntityGroup entityGroup = TickDynamicMod.instance.getEntityGroup(groupPath);
 			if (entityGroup == null) {
-				if (TickDynamicMod.debug)
-					System.out.println("Loading group: " + groupPath);
+				TickDynamicMod.logDebug("Loading group: " + groupPath);
 
 				TimedEntities timedEntities = (TimedEntities) TickDynamicMod.instance.getTimedGroup(groupPath);
 				if (timedEntities == null) {
@@ -218,13 +212,11 @@ public class TickDynamicConfig {
 
 				entityGroup = new EntityGroup(null, timedEntities, group.getName(), groupPath, EntityType.Entity, null);
 				TickDynamicMod.instance.entityGroups.put(groupPath, entityGroup);
-				if (TickDynamicMod.debug)
-					System.out.println("New Group: " + groupPath);
+				TickDynamicMod.logDebug("New Group: " + groupPath);
 			} else {
 				//Add to list of groups to update
 				updateGroups.add(entityGroup);
-				if (TickDynamicMod.debug)
-					System.out.println("Update Group: " + groupPath);
+				TickDynamicMod.logDebug("Update Group: " + groupPath);
 			}
 		}
 

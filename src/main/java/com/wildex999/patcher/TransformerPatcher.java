@@ -1,5 +1,6 @@
 package com.wildex999.patcher;
 
+import com.wildex999.tickdynamic.TickDynamicMod;
 import net.minecraft.launchwrapper.IClassTransformer;
 import org.apache.commons.io.IOUtils;
 import org.objectweb.asm.ClassReader;
@@ -28,7 +29,7 @@ public class TransformerPatcher implements IClassTransformer {
 			String patchedData;
 
 			try {
-				System.out.println("Patching class: " + transformedName);
+				TickDynamicMod.logInfo("Patching class: " + transformedName);
 
 				File out2 = new File("output_original.log");
 

@@ -32,6 +32,7 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
+import org.apache.logging.log4j.Level;
 
 /**
  * @author Wildex999 ( wildex999@gmail.com )
@@ -46,7 +47,6 @@ public class TickDynamicMod {
 	public static final String MODID = "tickdynamic";
 	public static final String MODNAME = "Tick Dynamic";
 	public static final String VERSION = "${version}";
-	public static boolean debug = false;
 	public static boolean debugGroups = false;
 	public static boolean debugTimer = false;
 	@Mod.Instance(MODID)
@@ -179,7 +179,7 @@ public class TickDynamicMod {
 			root.endTick(true);
 
 			if (debugTimer)
-				System.out.println("Tick time used: " + (root.getTimeUsed() / root.timeMilisecond) + "ms");
+				logTrace("Tick time used: " + (root.getTimeUsed() / TimeManager.timeMilisecond) + "ms");
 
 			//After every world is done ticking, re-balance the time slices according
 			//to the data gathered during the tick.
@@ -336,21 +336,19 @@ public class TickDynamicMod {
 		int groupCount = 0;
 		for (EntityGroup group : groups) {
 			if (group.getWorld() == null) {
-				if (debug)
-					System.out.println("Unable to unload group: " + group.getName() + ". World is null.");
+				logDebug("Unable to unload group: " + group.getName() + ". World is null.");
 				continue;
 			}
 			String groupName = getEntityGroupName(group.getWorld(), group.getName());
 			if (!entityGroups.remove(groupName, group)) {
-				System.err.println("Failed to unload EntityGroup: " + groupName + " for world: " + world.provider.getDimensionType().getName());
-				System.err.println("This might cause the world to remain in memory!");
+				logError("Failed to unload EntityGroup: " + groupName + " for world: " + world.provider.getDimensionType().getName());
+				logError("This might cause the world to remain in memory!");
 			} else
 				groupCount++;
 			group.valid = false;
 		}
 
-		if (debug)
-			System.out.println("Unloaded " + groupCount + " EntityGroups while unloading world: " + world.provider.getDimensionType().getName());
+		logDebug("Unloaded " + groupCount + " EntityGroups while unloading world: " + world.provider.getDimensionType().getName());
 	}
 
 	public String getWorldPrefix(World world) {
@@ -371,5 +369,25 @@ public class TickDynamicMod {
 	//Will create the world TimeManager and Entity Group if it doesn't exist.
 	public EntityGroup getWorldEntities(World world) {
 		return getWorldEntityGroup(world, "entity", EntityType.Entity, true, true);
+	}
+
+	public static void logInfo(String log, Object... params) {
+		FMLLog.log(MODNAME, Level.INFO, log, params);
+	}
+
+	public static void logDebug(String log, Object... params) {
+		FMLLog.log(MODNAME, Level.DEBUG, log, params);
+	}
+
+	public static void logError(String log, Object... params) {
+		FMLLog.log(MODNAME, Level.ERROR, log, params);
+	}
+
+	public static void logTrace(String log, Object... params) {
+		FMLLog.log(MODNAME, Level.TRACE, log, params);
+	}
+
+	public static void logWarn(String log, Object... params) {
+		FMLLog.log(MODNAME, Level.WARN, log, params);
 	}
 }

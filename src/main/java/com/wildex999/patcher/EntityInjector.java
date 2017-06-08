@@ -1,5 +1,6 @@
 package com.wildex999.patcher;
 
+import com.wildex999.tickdynamic.TickDynamicMod;
 import com.wildex999.tickdynamic.listinject.EntityObject;
 import net.minecraft.launchwrapper.IClassTransformer;
 import org.objectweb.asm.*;
@@ -14,7 +15,7 @@ public class EntityInjector implements IClassTransformer {
 
 		if (!transformedName.equals("net.minecraft.entity.Entity") && !transformedName.equals("net.minecraft.tileentity.TileEntity"))
 			return basicClass;
-		System.out.println("Entity Inject: " + transformedName);
+		TickDynamicMod.logInfo("Entity Inject: " + transformedName);
 
 		ClassReader cr = new ClassReader(basicClass);
 		ClassWriter cw = new ClassWriter(0);
@@ -37,7 +38,7 @@ public class EntityInjector implements IClassTransformer {
 		public void visit(int version, int access, String name,
 		                  String signature, String superName, String[] interfaces) {
 			if (!superName.equals("java/lang/Object")) {
-				System.err.println("WARNING: " + name + " already has a super class which will be overwritten: " + superName
+				TickDynamicMod.logWarn("WARNING: " + name + " already has a super class which will be overwritten: " + superName
 						+ "\nThis means that some other mod might no longer work properly!");
 			}
 			super.visit(version, access + Opcodes.ACC_SUPER, name, signature, EntityObject.class.getName().replace('.', '/'), interfaces);

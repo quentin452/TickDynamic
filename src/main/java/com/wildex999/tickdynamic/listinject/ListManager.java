@@ -42,8 +42,7 @@ public class ListManager<T extends EntityObject> implements List<T> {
 		entityCount = 0;
 		age = 0;
 
-		if (TickDynamicMod.debug)
-			System.out.println("Initializing " + type + " list for world: " + world.provider.getDimensionType().getName() + "(DIM" + world.provider.getDimension() + ")");
+		TickDynamicMod.logDebug("Initializing " + type + " list for world: " + world.provider.getDimensionType().getName() + "(DIM" + world.provider.getDimension() + ")");
 
 		//Add groups from config
 		loadLocalGroups();
@@ -73,8 +72,7 @@ public class ListManager<T extends EntityObject> implements List<T> {
 			if (localGroup.getGroupType() != entityType || localGroups.contains(localGroup))
 				continue;
 
-			if (TickDynamicMod.debug)
-				System.out.println("Load local group: " + name);
+			TickDynamicMod.logDebug("Load local group: " + name);
 			localGroups.add(localGroup);
 			localGroup.list = this;
 		}
@@ -98,8 +96,7 @@ public class ListManager<T extends EntityObject> implements List<T> {
 			if (localGroups.contains(localGroup))
 				continue; //Local group already defined
 
-			if (TickDynamicMod.debug)
-				System.out.println("Load global group: " + name);
+			TickDynamicMod.logDebug("Load global group: " + name);
 			localGroups.add(localGroup);
 			localGroup.list = this;
 		}
@@ -107,8 +104,7 @@ public class ListManager<T extends EntityObject> implements List<T> {
 
 	//Create new Class to Group map
 	public void createGroupMap() {
-		if (TickDynamicMod.debug)
-			System.out.println("Creating Group map");
+		TickDynamicMod.logDebug("Creating Group map");
 		groupMap.clear();
 
 		//Create map of ID to group
@@ -122,14 +118,13 @@ public class ListManager<T extends EntityObject> implements List<T> {
 					String parentPath = "None";
 					if (group.base != null)
 						parentPath = group.base.getConfigEntry();
-					System.out.println("Mapping: " + entityClass + " -> " + localPath + "(Global: " + parentPath + ")");
+					TickDynamicMod.logInfo("Mapping: " + entityClass + " -> " + localPath + "(Global: " + parentPath + ")");
 				}
 				groupMap.put(entityClass, group);
 			}
 		}
 
-		if (TickDynamicMod.debug)
-			System.out.println("Done!");
+		TickDynamicMod.logDebug("Done!");
 	}
 
 	//Re-create groups from config, and move any entities in/out due to change
@@ -178,11 +173,11 @@ public class ListManager<T extends EntityObject> implements List<T> {
 		group = groupMap.get(object.getClass());
 		if (group == null) {
 			if (TickDynamicMod.debugGroups)
-				System.out.println("Adding Entity: " + object.getClass() + " -> Ungrouped(" + entityType + ")");
+				TickDynamicMod.logDebug("Adding Entity: " + object.getClass() + " -> Ungrouped(" + entityType + ")");
 			ungroupedEntities.addEntity(object);
 		} else {
 			if (TickDynamicMod.debugGroups)
-				System.out.println("Adding Entity: " + object.getClass() + " -> " + group.getName());
+				TickDynamicMod.logDebug("Adding Entity: " + object.getClass() + " -> " + group.getName());
 			group.addEntity(object);
 		}
 	}
@@ -238,24 +233,19 @@ public class ListManager<T extends EntityObject> implements List<T> {
 		entityCount = 0;
 		age++;
 
-		if (TickDynamicMod.debug)
-			System.out.println("Cleared all loaded object of the type " + entityType + " from world: " + (world == null ? "Unknown" : world.provider.getDimensionType().getName()));
-
+		TickDynamicMod.logDebug("Cleared all loaded object of the type " + entityType + " from world: " + (world == null ? "Unknown" : world.provider.getDimensionType().getName()));
 	}
 
 	@Override
 	public boolean contains(Object object) {
 		if (!(object instanceof EntityObject)) {
-			if (TickDynamicMod.debug)
-				System.err.println("Trying to remove: " + object + " but not instanceof class EntityObject");
+			TickDynamicMod.logWarn("Trying to remove: " + object + " but not instanceof class EntityObject");
 			return false;
 		}
 		EntityObject entityObject = (EntityObject) object;
 		if (entityObject.TD_entityGroup == null || entityObject.TD_entityGroup.list != this) {
-			if (TickDynamicMod.debug) {
-				System.err.println("Contains check: " + object + " does not belong to list: " + this + " but instead " + (entityObject.TD_entityGroup == null ? "None" : entityObject.TD_entityGroup.list));
-				Thread.currentThread().dumpStack();
-			}
+			TickDynamicMod.logError("Contains check: " + object + " does not belong to list: " + this + " but instead " + (entityObject.TD_entityGroup == null ? "None" : entityObject.TD_entityGroup.list));
+			Thread.dumpStack();
 			return false;
 		}
 
@@ -363,8 +353,7 @@ public class ListManager<T extends EntityObject> implements List<T> {
 	@Override
 	public boolean remove(Object object) {
 		if (!contains(object)) {
-			if (TickDynamicMod.debug)
-				System.out.println("Failed to remove: " + object + " as it does not exist in list: " + this);
+			TickDynamicMod.logWarn("Failed to remove: " + object + " as it does not exist in list: " + this);
 			return false;
 		}
 
@@ -374,18 +363,15 @@ public class ListManager<T extends EntityObject> implements List<T> {
 			age++;
 			return true;
 		}
-		if (TickDynamicMod.debug)
-			System.err.println("Failed to remove: " + object + " unknown reason!");
+		TickDynamicMod.logError("Failed to remove: " + object + " unknown reason!");
 
 		return false;
 	}
 
 	@Override
 	public T remove(int index) {
-		if (TickDynamicMod.debug) {
-			Thread.currentThread().dumpStack();
-			System.out.println("Debug Warning: Using slow remove of objects(Remove by index)!");
-		}
+		Thread.dumpStack();
+		TickDynamicMod.logDebug("Debug Warning: Using slow remove of objects(Remove by index)!");
 		T entityObject = get(index);
 		if (remove(entityObject))
 			return entityObject;
@@ -425,8 +411,7 @@ public class ListManager<T extends EntityObject> implements List<T> {
 	@Override
 	public Object[] toArray() {
 		//Construct an array from all the groups
-		if (TickDynamicMod.debug)
-			System.out.println("SLOW toArray call on Entity/TileEntity list!");
+		TickDynamicMod.logDebug("SLOW toArray call on Entity/TileEntity list!");
 		Object[] objects = new Object[entityCount];
 		int offset = 0;
 		for (EntityGroup group : localGroups) {

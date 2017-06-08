@@ -1,5 +1,7 @@
 package com.wildex999.tickdynamic.listinject;
 
+import com.wildex999.tickdynamic.TickDynamicMod;
+
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
@@ -109,7 +111,7 @@ public class EntityIteratorTimed implements Iterator<EntityObject> {
 			currentAge++;
 			currentOffset--;
 		} else
-			System.err.println("Failed to remove: " + currentObject + " from loaded entity list!");
+			TickDynamicMod.logError("Failed to remove: " + currentObject + " from loaded entity list!");
 
 		if (currentAge != list.age)
 			throw new RuntimeException("ASSERT FAILED: " + currentAge + " : " + list.age);

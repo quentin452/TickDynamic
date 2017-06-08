@@ -99,7 +99,7 @@ public class TimeManager implements ITimed {
 			return;
 
 		if (TickDynamicMod.debugTimer)
-			System.out.println(name + ": balanceTime for " + children.size() + " children, with " + timeMax + " to give.");
+			TickDynamicMod.logTrace(name + ": balanceTime for " + children.size() + " children, with " + timeMax + " to give.");
 
 		long leftover = timeMax;
 		int allSlices = 0;
@@ -116,7 +116,7 @@ public class TimeManager implements ITimed {
 			if (timed.getSliceMax() == 0) {
 				//Special case: self sliceMax == 0.
 				if (TickDynamicMod.debugTimer)
-					System.out.println(timed.getName() + " reserved: " + timed.getTimeUsedAverage());
+					TickDynamicMod.logTrace(timed.getName() + " reserved: " + timed.getTimeUsedAverage());
 				leftover -= timed.getTimeUsedAverage();
 				it.remove();
 				if (leftover <= 0)
@@ -125,7 +125,7 @@ public class TimeManager implements ITimed {
 				//Special case: Children with sliceMax == 0 or other limitations requiring reservation
 				long reserved = timed.getReservedTime();
 				if (TickDynamicMod.debugTimer)
-					System.out.println(timed.getName() + " children Reserved: " + reserved);
+					TickDynamicMod.logTrace(timed.getName() + " children Reserved: " + reserved);
 				leftover -= reserved;
 				timed.setTimeMax(reserved);
 				if (leftover <= 0)
@@ -139,7 +139,7 @@ public class TimeManager implements ITimed {
 		while (leftover > 0 && childrenLeft.size() > 0) {
 			long before = leftover; //Store the value as we make changes to leftover as we go
 			if (TickDynamicMod.debugTimer)
-				System.out.println("Leftover: " + leftover);
+				TickDynamicMod.logTrace("Leftover: " + leftover);
 			for (Iterator<ITimed> it = childrenLeft.iterator(); it.hasNext(); ) {
 				ITimed child = it.next();
 				long slice = 1 + (long) (before * ((double) child.getSliceMax() / (double) allSlices)); //A slice can't be 0
@@ -164,7 +164,7 @@ public class TimeManager implements ITimed {
 				}
 				child.setTimeMax(currentMax + 1); //Update the max
 				if (TickDynamicMod.debugTimer)
-					System.out.println(child.getName() + " currentMax: " + currentMax);
+					TickDynamicMod.logTrace(child.getName() + " currentMax: " + currentMax);
 			}
 			firstPass = false;
 		}
@@ -196,7 +196,7 @@ public class TimeManager implements ITimed {
 	@Override
 	public void setTimeMax(long newTimeMax) {
 		if (TickDynamicMod.debugTimer)
-			System.out.println(name + ": setTimeMax: " + newTimeMax);
+			TickDynamicMod.logTrace(name + ": setTimeMax: " + newTimeMax);
 		timeMax = newTimeMax;
 	}
 

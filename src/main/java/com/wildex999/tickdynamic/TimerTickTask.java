@@ -17,7 +17,7 @@ public class TimerTickTask extends TimerTask {
 			TickDynamicMod.instance.tickCounter = 0;
 
 		} catch (InterruptedException e) {
-			System.err.println("Exception during TPS Calculation:");
+			TickDynamicMod.logError("Exception during TPS Calculation:");
 			e.printStackTrace();
 		} finally {
 			if (TickDynamicMod.instance != null && TickDynamicMod.instance.tpsMutex != null)

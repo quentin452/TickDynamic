@@ -1,5 +1,7 @@
 package com.wildex999.patcher;
 
+import com.wildex999.tickdynamic.TickDynamicMod;
+
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -158,7 +160,7 @@ public class PatchParser {
 		boolean inMultiLineComment = false;
 		TokenType currentCommand = null;
 		int commandContentIndex = 0;
-		System.out.println("Patch length: " + patch.length());
+		TickDynamicMod.logInfo("Patch length: " + patch.length());
 		for (int i = 0; i < patch.length(); i++) {
 			if (inMultiLineComment && patch.charAt(i) != '!')
 				continue;
@@ -202,7 +204,7 @@ public class PatchParser {
 
 					if (currentCommand != null) {
 						tokens.add(new CommandToken(currentCommand, patch.substring(commandContentIndex, i - 1)));
-						System.out.println("Wrote command: " + currentCommand + " with Text: " + tokens.get(tokens.size() - 1).text);
+						TickDynamicMod.logInfo("Wrote command: " + currentCommand + " with Text: " + tokens.get(tokens.size() - 1).text);
 					}
 
 					if (command != null) {
@@ -232,7 +234,7 @@ public class PatchParser {
 			}
 		}
 
-		System.out.println("Done parsing step 1");
+		TickDynamicMod.logInfo("Done parsing step 1");
 
 		//Parse the replacement tokens inside each command
 		for (CommandToken token : tokens) {
@@ -318,9 +320,9 @@ public class PatchParser {
 			if (startIndex < str.length())
 				token.replacementTokens.add(new ReplacementToken(TokenType.Text, str.substring(startIndex)));
 
-			System.out.println("Replacements for " + token.type + ": ");
+			TickDynamicMod.logInfo("Replacements for " + token.type + ": ");
 			for (ReplacementToken t : token.replacementTokens) {
-				System.out.println("- " + t.type + " :: " + t.var);
+				TickDynamicMod.logInfo("- " + t.type + " :: " + t.var);
 			}
 
 		}
@@ -410,7 +412,7 @@ public class PatchParser {
 			if (!ended)
 				throw new Exception("Reached end of stream without End command!");
 
-			System.out.println("(" + token.type + ") RegEx: " + detectionRegEx.toString());
+			TickDynamicMod.logInfo("(" + token.type + ") RegEx: " + detectionRegEx.toString());
 
 			//Find occurrence in base using generated RegEx
 			String subBase = output.substring(baseOrigin, baseLimit);
