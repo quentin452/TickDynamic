@@ -39,7 +39,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
  * - Entities and TileEntities grouped by owner(Player), and limits can be set per player.
  */
 
-@Mod(modid = TickDynamicMod.MODID, name = TickDynamicMod.MODNAME, version = TickDynamicMod.VERSION, updateJSON = "https://bitbucket.org/The_Fireplace/minecraft-mod-updates/raw/master/tickdynamic.json", serverSideOnly = true)
+@Mod(modid = TickDynamicMod.MODID, name = TickDynamicMod.MODNAME, version = TickDynamicMod.VERSION, updateJSON = "https://bitbucket.org/The_Fireplace/minecraft-mod-updates/raw/master/tickdynamic.json")
 public class TickDynamicMod {
 	public static final String MODID = "tickdynamic";
 	public static final String MODNAME = "Tick Dynamic";
