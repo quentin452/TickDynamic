@@ -155,7 +155,7 @@ public class TickDynamicMod {
 			long overTimeTick = (msPerTick * externalGroup.timeMilisecond) - (root.getTimeUsed() - externalGroup.getTimeUsed());
 			if (overTimeTick < 0)
 				overTime += overTimeTick;
-			/*System.out.println("TickTime: " + ((root.getTimeUsed()-externalGroup.getTimeUsed())/(double)externalGroup.timeMilisecond) +
+			/*logTrace("TickTime: " + ((root.getTimeUsed()-externalGroup.getTimeUsed())/(double)externalGroup.timeMilisecond) +
     				" Full Tick time: " + (externalGroup.getTimeUsed()/(double)externalGroup.timeMilisecond) +
     				" External time used: " + (overTime/(double)externalGroup.timeMilisecond)+"ms");*/
 			if (overTime < 0)
@@ -195,8 +195,10 @@ public class TickDynamicMod {
 		}
 	}
 
-	//Calculate the new average TPS
-	//Note: acquires a mutex due to contention with timer thread on tickCounter and tpsList.
+	/**
+	 * Calculate the new average TPS
+	 * Note: acquires a mutex due to contention with timer thread on tickCounter and tpsList.
+	 */
 	public void updateTPS() {
 		try {
 			tpsMutex.acquire();
@@ -215,14 +217,20 @@ public class TickDynamicMod {
 		}
 	}
 
-	//Get the named TimedGroup.
-	//Return: Null if not loaded
+	/**
+	 * Get the named TimedGroup.
+	 * @return
+	 * Null if not loaded
+	 */
 	public TimedGroup getTimedGroup(String name) {
 		return (TimedGroup) timedObjects.get(name);
 	}
 
-	//Get a named EntityGroup which possibly does not belong to a world
-	//Return: Null if doesn't exist in config
+	/**
+	 * Get a named EntityGroup which possibly does not belong to a world
+	 * @return
+	 * Null if doesn't exist in config
+	 */
 	public EntityGroup getEntityGroup(String name) {
 		//All Global Groups are loaded during config load/reload
 
@@ -244,8 +252,10 @@ public class TickDynamicMod {
 		return strBuilder.toString();
 	}
 
-	//Get the TimeManager for a world.
-	//Will create if it doesn't exist.
+	/**
+	 * Get the TimeManager for a world.
+	 * Will create if it doesn't exist.
+	 */
 	public TimeManager getWorldTimeManager(World world) {
 		String managerName = getEntityGroupName(world, null);
 		TimeManager worldManager = getTimeManager(managerName);
@@ -264,9 +274,13 @@ public class TickDynamicMod {
 		return worldManager;
 	}
 
-	//Get the named TimedGroup from the given world.
-	//canCreate: Whether to create if it does not exist
-	//hasConfig: Whether to create with config entry
+	/**
+	 * Get the named TimedGroup from the given world.
+	 * @param canCreate
+	 * Whether to create if it does not exist
+	 * @param hasConfig
+	 * Whether to create with config entry
+	 */
 	public TimedEntities getWorldTimedGroup(World world, String name, boolean canCreate, boolean hasConfig) {
 		String groupName = getEntityGroupName(world, name);
 		TimedGroup group = getTimedGroup(groupName);
@@ -284,10 +298,14 @@ public class TickDynamicMod {
 		return (TimedEntities) group;
 	}
 
-	//groupType: The type to make the new Group if it doesn't already exist
-	//Will return existing group even if type doesn't match.
-	//canCreate: Whether to create the group if it does not exist
-	//hasConfig: Whether to create with config entry
+	/**
+	 * @param groupType
+	 * The type to make the new Group if it doesn't already exist. Will return existing group even if type doesn't match.
+	 * @param canCreate
+	 * Whether to create the group if it does not exist
+	 * @param hasConfig
+	 * Whether to create with config entry
+	 */
 	public EntityGroup getWorldEntityGroup(World world, String name, EntityType groupType, boolean canCreate, boolean hasConfig) {
 		String groupName = getEntityGroupName(world, name);
 		EntityGroup group = getEntityGroup(groupName);
@@ -303,7 +321,9 @@ public class TickDynamicMod {
 		return group;
 	}
 
-	//Get all EntityGroups for the given world
+	/**
+	 * Get all EntityGroups for the given world
+	 */
 	public List<EntityGroup> getWorldEntityGroups(World world) {
 		List<EntityGroup> groups = new ArrayList<>();
 
@@ -327,7 +347,9 @@ public class TickDynamicMod {
 		return groups;
 	}
 
-	//Unload every Entity Group for the given world
+	/**
+	 * Unload every Entity Group for the given world
+	 */
 	public void clearWorldEntityGroups(World world) {
 		if (world == null)
 			return;
@@ -359,14 +381,18 @@ public class TickDynamicMod {
 		return config.getCategory(getWorldPrefix(world));
 	}
 
-	//Get the group for Ungrouped Tile Entities in the given world
-	//Will create the world TimeManager and Entity Group if it doesn't exist.
+	/**
+	 * Get the group for Ungrouped Tile Entities in the given world
+	 * Will create the world TimeManager and Entity Group if it doesn't exist.
+	 */
 	public EntityGroup getWorldTileEntities(World world) {
 		return getWorldEntityGroup(world, "tileentity", EntityType.TileEntity, true, true);
 	}
 
-	//Get the group for Ungrouped Tile Entities in the given world
-	//Will create the world TimeManager and Entity Group if it doesn't exist.
+	/**
+	 * Get the group for Ungrouped Entities in the given world
+	 * Will create the world TimeManager and Entity Group if it doesn't exist.
+	 */
 	public EntityGroup getWorldEntities(World world) {
 		return getWorldEntityGroup(world, "entity", EntityType.Entity, true, true);
 	}
