@@ -1,5 +1,6 @@
 package com.wildex999.tickdynamic;
 
+import com.google.common.collect.Maps;
 import com.wildex999.tickdynamic.listinject.*;
 import com.wildex999.tickdynamic.timemanager.ITimed;
 import com.wildex999.tickdynamic.timemanager.TimedEntities;
@@ -16,15 +17,12 @@ import java.util.HashMap;
 import java.util.List;
 
 public class WorldEventHandler {
-	public TickDynamicMod mod;
-
 	private HashMap<World, ListManagerEntities> entityListManager;
 	private HashMap<World, ListManager> tileListManager;
 
-	public WorldEventHandler(TickDynamicMod mod) {
-		this.mod = mod;
-		entityListManager = new HashMap<>();
-		tileListManager = new HashMap<>();
+	public WorldEventHandler() {
+		entityListManager = Maps.newHashMap();
+		tileListManager = Maps.newHashMap();
 	}
 
 	@SubscribeEvent
@@ -47,7 +45,7 @@ public class WorldEventHandler {
 			return;
 
 		//Register our own Entity List manager, copying over any existing Entities
-		if (mod.debug)
+		if (TickDynamicMod.debug)
 			System.out.println("World load: " + event.getWorld().provider.getDimensionType().getName());
 
 		//Inject Custom Profiler for watching Entity ticking
@@ -59,20 +57,20 @@ public class WorldEventHandler {
 			return; //Do not add TickDynamic to world
 		}
 
-		ListManagerEntities entityManager = new ListManagerEntities(event.getWorld(), mod);
+		ListManagerEntities entityManager = new ListManagerEntities(event.getWorld());
 		entityListManager.put(event.getWorld(), entityManager);
-		ListManager tileEntityManager = new ListManager(event.getWorld(), mod, EntityType.TileEntity);
+		ListManager tileEntityManager = new ListManager(event.getWorld(), EntityType.TileEntity);
 		tileListManager.put(event.getWorld(), tileEntityManager);
 
 		//Overwrite existing lists, copying any loaded Entities
-		if (mod.debug)
+		if (TickDynamicMod.debug)
 			System.out.println("Adding " + event.getWorld().loadedEntityList.size() + " existing Entities.");
 		List<? extends EntityObject> oldList = event.getWorld().loadedEntityList;
 		ReflectionHelper.setPrivateValue(World.class, event.getWorld(), entityManager, "loadedEntityList", "field_72996_f");
 		entityManager.addAll(oldList);
 
 		//Tiles
-		if (mod.debug)
+		if (TickDynamicMod.debug)
 			System.out.println("Adding " + event.getWorld().tickableTileEntities.size() + " existing TileEntities.");
 		oldList = event.getWorld().tickableTileEntities;
 		ReflectionHelper.setPrivateValue(World.class, event.getWorld(), tileEntityManager, "tickableTileEntities", "field_175730_i");
@@ -85,7 +83,7 @@ public class WorldEventHandler {
 		if (event.getWorld() == null || event.getWorld().isRemote)
 			return;
 
-		if (mod.debug)
+		if (TickDynamicMod.debug)
 			System.out.println("TickDynamic unloading injected lists for world: " + event.getWorld().provider.getDimensionType().getName());
 
 		try {
@@ -106,18 +104,18 @@ public class WorldEventHandler {
 			list.clear();
 
 		//Clear loaded groups for world
-		mod.clearWorldEntityGroups(event.getWorld());
+		TickDynamicMod.instance.clearWorldEntityGroups(event.getWorld());
 
 		//Clear timed groups
-		ITimed manager = mod.getWorldTimeManager(event.getWorld());
+		ITimed manager = TickDynamicMod.instance.getWorldTimeManager(event.getWorld());
 		if (manager != null)
-			mod.timedObjects.remove(manager);
+			TickDynamicMod.instance.timedObjects.remove(manager);
 
-		for (ITimed timed : mod.timedObjects.values()) {
+		for (ITimed timed : TickDynamicMod.instance.timedObjects.values()) {
 			if (timed instanceof TimedEntities) {
 				TimedEntities timedGroup = (TimedEntities) timed;
 				if (!timedGroup.getEntityGroup().valid)
-					mod.timedObjects.remove(timedGroup);
+					TickDynamicMod.instance.timedObjects.remove(timedGroup);
 			}
 		}
 

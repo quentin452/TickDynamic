@@ -17,8 +17,6 @@ import java.util.List;
 
 public class CommandListWorlds implements ICommand {
 
-	private TickDynamicMod mod;
-
 	private String formatCode = "\u00a7"; //Ignore this when counting length
 	private int borderWidth;
 
@@ -26,15 +24,7 @@ public class CommandListWorlds implements ICommand {
 	private int currentPage;
 	private int maxPages;
 
-	private class ListData {
-		public String worldName;
-		public String worldData;
-		public String tileData;
-		public String entityData;
-	}
-
-	public CommandListWorlds(TickDynamicMod mod) {
-		this.mod = mod;
+	public CommandListWorlds() {
 		borderWidth = 50;
 		rowsPerPage = 6;
 	}
@@ -85,7 +75,7 @@ public class CommandListWorlds implements ICommand {
 		writeHeader(outputBuilder);
 
 		int extraCount = 2; //External and Other
-		int listSize = mod.server.worlds.length + extraCount;
+		int listSize = server.worlds.length + extraCount;
 		if (listSize > rowsPerPage)
 			maxPages = (int) Math.ceil(listSize / (float) rowsPerPage);
 		else
@@ -97,14 +87,14 @@ public class CommandListWorlds implements ICommand {
 		//Write data
 		int toSkip = (currentPage - 1) * rowsPerPage;
 		int toSend = rowsPerPage;
-		for (WorldServer world : mod.server.worlds) {
+		for (WorldServer world : server.worlds) {
 			//Skip for pages
 			if (toSkip-- > 0)
 				continue;
 			if (toSend-- <= 0)
 				break;
 
-			TimeManager worldManager = mod.getWorldTimeManager(world);
+			TimeManager worldManager = TickDynamicMod.instance.getWorldTimeManager(world);
 			if (world == null || worldManager == null)
 				continue;
 
@@ -117,7 +107,7 @@ public class CommandListWorlds implements ICommand {
 
 		if (currentPage == maxPages) {
 			//Add Other
-			TimedGroup other = mod.getTimedGroup("other");
+			TimedGroup other = TickDynamicMod.instance.getTimedGroup("other");
 			if (other != null) {
 				outputBuilder.append(TextFormatting.GRAY + "| ").append(TextFormatting.RESET + "(Other)");
 				String usedTime = decimalFormat.format(other.getTimeUsedAverage() / (double) TimeManager.timeMilisecond);
@@ -126,7 +116,7 @@ public class CommandListWorlds implements ICommand {
 			}
 
 			//Add External
-			TimedGroup external = mod.getTimedGroup("external");
+			TimedGroup external = TickDynamicMod.instance.getTimedGroup("external");
 			if (other != null) {
 				outputBuilder.append(TextFormatting.GRAY + "| ").append(TextFormatting.RESET + "(External)");
 				String usedTime = decimalFormat.format(external.getTimeUsedAverage() / (double) TimeManager.timeMilisecond);

@@ -15,8 +15,8 @@ public class ListManagerEntities extends ListManager<EntityObject> {
 
 	public CustomProfiler profiler;
 
-	public ListManagerEntities(World world, TickDynamicMod mod) {
-		super(world, mod, EntityType.Entity);
+	public ListManagerEntities(World world) {
+		super(world, EntityType.Entity);
 		profiler = (CustomProfiler) world.profiler;
 	}
 

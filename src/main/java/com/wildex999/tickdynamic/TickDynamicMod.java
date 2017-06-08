@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.concurrent.Semaphore;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.wildex999.tickdynamic.commands.CommandHandler;
 import com.wildex999.tickdynamic.listinject.EntityGroup;
 import com.wildex999.tickdynamic.listinject.EntityType;
@@ -56,7 +58,6 @@ public class TickDynamicMod {
 	public TimeManager root;
 	public boolean enabled;
 	public MinecraftServer server;
-	public WorldEventHandler eventHandler;
 
 	public Semaphore tpsMutex;
 	public Timer tpsTimer;
@@ -81,7 +82,7 @@ public class TickDynamicMod {
 	public void preInit(FMLPreInitializationEvent event) {
 		tpsMutex = new Semaphore(1);
 		tpsTimer = new Timer();
-		tpsList = new LinkedList<>();
+		tpsList = Lists.newLinkedList();
 		config = new Configuration(event.getSuggestedConfigurationFile());
 	}
 
@@ -104,35 +105,34 @@ public class TickDynamicMod {
 	@Mod.EventHandler
 	public void init(FMLInitializationEvent event) {
 		MinecraftForge.EVENT_BUS.register(this);
-		timedObjects = new HashMap<>();
-		entityGroups = new HashMap<>();
+		timedObjects = Maps.newHashMap();
+		entityGroups = Maps.newHashMap();
 
 		loadConfig(true);
 
-		root = new TimeManager(this, null, "root", null);
+		root = new TimeManager(null, "root", null);
 		root.init();
 		root.setTimeMax(defaultTickTime * TimeManager.timeMilisecond);
 
 		//Other group accounts the time used in a tick, but not for Entities or TileEntities
-		TimedGroup otherTimed = new TimedGroup(this, null, "other", "other");
+		TimedGroup otherTimed = new TimedGroup(null, "other", "other");
 		otherTimed.setSliceMax(0); //Make it get unlimited time
 		root.addChild(otherTimed);
 
 		//External group accounts the time used between ticks due to external load
-		TimedGroup externalTimed = new TimedGroup(this, null, "external", "external");
+		TimedGroup externalTimed = new TimedGroup(null, "external", "external");
 		externalTimed.setSliceMax(0);
 		root.addChild(externalTimed);
 
-		eventHandler = new WorldEventHandler(this);
-		MinecraftForge.EVENT_BUS.register(eventHandler);
+		MinecraftForge.EVENT_BUS.register(new WorldEventHandler());
 	}
 
 
 	@Mod.EventHandler
 	public void serverStart(FMLServerStartingEvent event) {
-		event.registerServerCommand(new CommandHandler(this));
+		event.registerServerCommand(new CommandHandler());
 
-		tpsTimer.schedule(new TimerTickTask(this), 1000, 1000);
+		tpsTimer.schedule(new TimerTickTask(), 1000, 1000);
 
 		server = event.getServer();
 	}
@@ -251,7 +251,7 @@ public class TickDynamicMod {
 		TimeManager worldManager = getTimeManager(managerName);
 
 		if (worldManager == null) {
-			worldManager = new TimeManager(this, world, managerName, managerName);
+			worldManager = new TimeManager(world, managerName, managerName);
 			worldManager.init();
 			if (world.isRemote)
 				worldManager.setSliceMax(0);
@@ -274,7 +274,7 @@ public class TickDynamicMod {
 		if ((group == null || !(group instanceof TimedEntities)) && canCreate) {
 			String baseGroupName = "groups." + name;
 			TimedGroup baseGroup = getTimedGroup(baseGroupName);
-			group = new TimedEntities(this, world, name, hasConfig ? groupName : null, baseGroup);
+			group = new TimedEntities(world, name, hasConfig ? groupName : null, baseGroup);
 			group.init();
 
 			TimeManager worldManager = getWorldTimeManager(world);
@@ -296,7 +296,7 @@ public class TickDynamicMod {
 		{
 			String baseGroupName = "groups." + name;
 			EntityGroup baseGroup = getEntityGroup(baseGroupName);
-			group = new EntityGroup(this, world, getWorldTimedGroup(world, name, true, hasConfig), name, hasConfig ? groupName : null, groupType, baseGroup);
+			group = new EntityGroup(world, getWorldTimedGroup(world, name, true, hasConfig), name, hasConfig ? groupName : null, groupType, baseGroup);
 			entityGroups.put(groupName, group);
 		}
 

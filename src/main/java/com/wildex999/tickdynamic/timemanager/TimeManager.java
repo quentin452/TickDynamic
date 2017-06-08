@@ -35,18 +35,16 @@ public class TimeManager implements ITimed {
 	private long cachedTimeReserved;
 
 	public final String name;
-	public final TickDynamicMod mod;
 	public final World world;
 	public String configEntry;
 
-	public TimeManager(TickDynamicMod mod, World world, String name, String configEntry) {
+	public TimeManager(World world, String name, String configEntry) {
 		children = new ArrayList<>();
 		if (configEntry != null)
-			mod.timedObjects.put(configEntry, this);
+			TickDynamicMod.instance.timedObjects.put(configEntry, this);
 		else
-			mod.timedObjects.put(name, this);
+			TickDynamicMod.instance.timedObjects.put(name, this);
 		this.name = name;
-		this.mod = mod;
 		this.world = world;
 		this.configEntry = configEntry;
 	}
@@ -63,7 +61,7 @@ public class TimeManager implements ITimed {
 		if (configEntry != null)
 			loadConfig(true);
 		else
-			setSliceMax(mod.defaultWorldSlicesMax);
+			setSliceMax(TickDynamicMod.instance.defaultWorldSlicesMax);
 	}
 
 	@Override
@@ -76,11 +74,11 @@ public class TimeManager implements ITimed {
 		if (configEntry == null)
 			return;
 
-		setSliceMax(mod.config.get(configEntry, configKeySlicesMax, mod.defaultWorldSlicesMax).getInt());
+		setSliceMax(TickDynamicMod.instance.config.get(configEntry, configKeySlicesMax, TickDynamicMod.instance.defaultWorldSlicesMax).getInt());
 
 		//Save any new defaults
 		if (saveDefaults)
-			mod.config.save();
+			TickDynamicMod.instance.config.save();
 	}
 
 	@Override
@@ -88,16 +86,16 @@ public class TimeManager implements ITimed {
 		if (configEntry == null)
 			return;
 
-		mod.config.get(configEntry, configKeySlicesMax, mod.defaultWorldSlicesMax).setValue(getSliceMax());
+		TickDynamicMod.instance.config.get(configEntry, configKeySlicesMax, TickDynamicMod.instance.defaultWorldSlicesMax).setValue(getSliceMax());
 
 		if (saveFile)
-			mod.config.save();
+			TickDynamicMod.instance.config.save();
 	}
 
 	//Looks at current usage and rebalances the max time usage according to slices.
 	//Will call balanceTime() on children when done balancing, to propagate the new timeMax.
 	public void balanceTime() {
-		if (!mod.enabled)
+		if (!TickDynamicMod.instance.enabled)
 			return;
 
 		if (TickDynamicMod.debugTimer)

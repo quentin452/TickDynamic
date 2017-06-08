@@ -51,7 +51,7 @@ public class EntityGroup {
 
 	//If base is not null, copy the values from it before reading the config
 	//groupType will be overwritten by config if it already has an entry
-	public EntityGroup(TickDynamicMod mod, World world, TimedEntities timedGroup, String name, String configEntry, EntityType groupType, EntityGroup base) {
+	public EntityGroup(World world, TimedEntities timedGroup, String name, String configEntry, EntityType groupType, EntityGroup base) {
 		if (timedGroup == null && base != null)
 			System.err.println("Assertion failed: Created EntityGroup with a null TimedGroup!");
 

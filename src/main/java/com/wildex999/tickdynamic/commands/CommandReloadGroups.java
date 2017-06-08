@@ -10,13 +10,6 @@ import net.minecraft.util.text.TextComponentString;
 import java.util.List;
 
 public class CommandReloadGroups implements ICommand {
-
-	private TickDynamicMod mod;
-
-	public CommandReloadGroups(TickDynamicMod mod) {
-		this.mod = mod;
-	}
-
 	@Override
 	public String getName() {
 		return "tickdynamic reloadgroups";
@@ -36,7 +29,7 @@ public class CommandReloadGroups implements ICommand {
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 		sender.sendMessage(new TextComponentString("Reloading Groups configuration..."));
 		sender.sendMessage(new TextComponentString("Note: Moving of (tile)entities to new groups might cause lag!!!"));
-		mod.loadConfig(true);
+		TickDynamicMod.instance.loadConfig(true);
 		sender.sendMessage(new TextComponentString("Reload and moving complete!"));
 	}
 

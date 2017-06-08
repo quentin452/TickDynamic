@@ -17,13 +17,10 @@ import java.util.List;
 @ParametersAreNonnullByDefault
 public class CommandEnabled implements ICommand {
 
-	private TickDynamicMod mod;
 	private List listYes;
 	private List listNo;
 
-	public CommandEnabled(TickDynamicMod mod) {
-		this.mod = mod;
-
+	public CommandEnabled() {
 		listYes = new ArrayList();
 		listYes.add("yes");
 		listNo = new ArrayList();
@@ -48,7 +45,7 @@ public class CommandEnabled implements ICommand {
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
 		if (args.length == 1) {
-			if (mod.enabled)
+			if (TickDynamicMod.instance.enabled)
 				sender.sendMessage(new TextComponentString("Tick Dynamic is currently " + TextFormatting.GREEN + " Enabled!"));
 			else
 				sender.sendMessage(new TextComponentString("Tick Dynamic is currently " + TextFormatting.RED + " Disabled!"));
@@ -57,19 +54,19 @@ public class CommandEnabled implements ICommand {
 		}
 
 		if (args[1].equals("yes") || args[1].equals("y")) {
-			if (mod.enabled) {
+			if (TickDynamicMod.instance.enabled) {
 				sender.sendMessage(new TextComponentString(TextFormatting.GREEN + "Tick Dynamic is already enabled!"));
 				return;
 			}
-			mod.enabled = true;
+			TickDynamicMod.instance.enabled = true;
 			sender.sendMessage(new TextComponentString("Tick Dynamic is now " + TextFormatting.GREEN + "Enabled!"));
 			return;
 		} else if (args[1].equals("no") || args[1].equals("n")) {
-			if (!mod.enabled) {
+			if (!TickDynamicMod.instance.enabled) {
 				sender.sendMessage(new TextComponentString(TextFormatting.RED + "Tick Dynamic is already disabled!"));
 				return;
 			}
-			mod.enabled = false;
+			TickDynamicMod.instance.enabled = false;
 			sender.sendMessage(new TextComponentString("Tick Dynamic is now " + TextFormatting.RED + "Disabled!"));
 			return;
 		}

@@ -19,8 +19,6 @@ import java.text.DecimalFormat;
 import java.util.*;
 
 public class CommandWorld implements ICommand {
-
-	private TickDynamicMod mod;
 	private int borderWidth;
 	private World world;
 
@@ -31,8 +29,7 @@ public class CommandWorld implements ICommand {
 	private final DecimalFormat decimalFormat = new DecimalFormat("#.00");
 	private final String formatCode = "\u00a7"; //Ignore this when counting length
 
-	public CommandWorld(TickDynamicMod mod) {
-		this.mod = mod;
+	public CommandWorld() {
 		this.borderWidth = 50;
 	}
 

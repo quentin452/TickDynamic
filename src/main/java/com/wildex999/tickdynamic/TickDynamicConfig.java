@@ -150,17 +150,17 @@ public class TickDynamicConfig {
 		loadDefaultGlobalGroups(mod);
 
 		//Load Global groups
-		loadGroups(mod, "groups");
+		loadGroups("groups");
 	}
 
 	//Load all groups under the given category
-	public static void loadGroups(TickDynamicMod mod, String category) {
-		ConfigCategory groupsCat = mod.config.getCategory(category);
+	public static void loadGroups(String category) {
+		ConfigCategory groupsCat = TickDynamicMod.instance.config.getCategory(category);
 		Set<ConfigCategory> groups = groupsCat.getChildren();
 
 		//Remove every group which is no longer in groups set
 		ArrayList<String> toRemove = new ArrayList<>();
-		for (String groupPath : mod.entityGroups.keySet()) {
+		for (String groupPath : TickDynamicMod.instance.entityGroups.keySet()) {
 			if (!groupPath.startsWith(category))
 				continue; //We only care about groups in the same category
 
@@ -172,23 +172,22 @@ public class TickDynamicConfig {
 				groupName = groupPath.substring(nameIndex + 1);
 
 			boolean remove = true;
-			if (mod.config.hasCategory(groupPath))
+			if (TickDynamicMod.instance.config.hasCategory(groupPath))
 				remove = false;
 
 			//Check if local copy of a global group
 			if (remove) {
-				EntityGroup entityGroup = mod.entityGroups.get(groupPath);
+				EntityGroup entityGroup = TickDynamicMod.instance.entityGroups.get(groupPath);
 				if (entityGroup != null && entityGroup.base != null) {
 					//Check if the global group still exists
-					if (mod.config.hasCategory("groups." + groupName))
+					if (TickDynamicMod.instance.config.hasCategory("groups." + groupName))
 						remove = false;
 				}
 			}
 
 			//Mark for removal after loop
 			if (remove) {
-
-				if (mod.debug)
+				if (TickDynamicMod.debug)
 					System.out.println("Remove Group: " + groupPath);
 				toRemove.add(groupPath);
 			}
@@ -196,7 +195,7 @@ public class TickDynamicConfig {
 
 		//Remove after due to ConcurrentException
 		for (String groupPath : toRemove) {
-			EntityGroup groupRemoved = mod.entityGroups.remove(groupPath);
+			EntityGroup groupRemoved = TickDynamicMod.instance.entityGroups.remove(groupPath);
 			if (groupRemoved != null)
 				groupRemoved.valid = false;
 		}
@@ -206,25 +205,25 @@ public class TickDynamicConfig {
 		for (ConfigCategory group : groups) {
 			//Check if group already exists
 			String groupPath = category + "." + group.getName();
-			EntityGroup entityGroup = mod.getEntityGroup(groupPath);
+			EntityGroup entityGroup = TickDynamicMod.instance.getEntityGroup(groupPath);
 			if (entityGroup == null) {
-				if (mod.debug)
+				if (TickDynamicMod.debug)
 					System.out.println("Loading group: " + groupPath);
 
-				TimedEntities timedEntities = (TimedEntities) mod.getTimedGroup(groupPath);
+				TimedEntities timedEntities = (TimedEntities) TickDynamicMod.instance.getTimedGroup(groupPath);
 				if (timedEntities == null) {
-					timedEntities = new TimedEntities(mod, null, group.getName(), groupPath, null);
+					timedEntities = new TimedEntities(null, group.getName(), groupPath, null);
 					timedEntities.init();
 				}
 
-				entityGroup = new EntityGroup(mod, null, timedEntities, group.getName(), groupPath, EntityType.Entity, null);
-				mod.entityGroups.put(groupPath, entityGroup);
-				if (mod.debug)
+				entityGroup = new EntityGroup(null, timedEntities, group.getName(), groupPath, EntityType.Entity, null);
+				TickDynamicMod.instance.entityGroups.put(groupPath, entityGroup);
+				if (TickDynamicMod.debug)
 					System.out.println("New Group: " + groupPath);
 			} else {
 				//Add to list of groups to update
 				updateGroups.add(entityGroup);
-				if (mod.debug)
+				if (TickDynamicMod.debug)
 					System.out.println("Update Group: " + groupPath);
 			}
 		}
@@ -242,9 +241,9 @@ public class TickDynamicConfig {
 		groupPath = "groups.entity";
 		group = mod.getEntityGroup(groupPath);
 		if (group == null) {
-			timedGroup = new TimedEntities(mod, null, "entity", groupPath, null);
+			timedGroup = new TimedEntities(null, "entity", groupPath, null);
 			timedGroup.init();
-			group = new EntityGroup(mod, null, timedGroup, "entity", groupPath, EntityType.Entity, null);
+			group = new EntityGroup(null, timedGroup, "entity", groupPath, EntityType.Entity, null);
 			mod.entityGroups.put(groupPath, group);
 		}
 
@@ -257,22 +256,20 @@ public class TickDynamicConfig {
 			String[] entityClasses = {EntityPlayer.class.getName(), EntityPlayerMP.class.getName()};
 			mod.config.get(groupPath, EntityGroup.config_classNames, entityClasses);
 
-			timedGroup = new TimedEntities(mod, null, "players", groupPath, null);
+			timedGroup = new TimedEntities(null, "players", groupPath, null);
 			timedGroup.init();
 
-			group = new EntityGroup(mod, null, timedGroup, "players", groupPath, EntityType.Entity, null);
+			group = new EntityGroup(null, timedGroup, "players", groupPath, EntityType.Entity, null);
 			mod.entityGroups.put(groupPath, group);
 		}
 
 		groupPath = "groups.tileentity";
 		group = mod.getEntityGroup(groupPath);
 		if (group == null) {
-			timedGroup = new TimedEntities(mod, null, "tileentity", groupPath, null);
+			timedGroup = new TimedEntities(null, "tileentity", groupPath, null);
 			timedGroup.init();
-			group = new EntityGroup(mod, null, timedGroup, "tileentity", groupPath, EntityType.TileEntity, null);
+			group = new EntityGroup(null, timedGroup, "tileentity", groupPath, EntityType.TileEntity, null);
 			mod.entityGroups.put(groupPath, group);
 		}
-
 	}
-
 }

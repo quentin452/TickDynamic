@@ -25,23 +25,15 @@ public class TimedGroup implements ITimed {
 	protected LinkedList<Integer> listObjectsRun;
 
 	public final String name;
-	public final TickDynamicMod mod;
 	public final World world;
 	public String configEntry;
 
-	public enum GroupType {
-		TileEntity,
-		Entity,
-		Other
-	}
-
-	public TimedGroup(TickDynamicMod mod, World world, String name, String configEntry) {
+	public TimedGroup(World world, String name, String configEntry) {
 		if (configEntry != null)
-			mod.timedObjects.put(configEntry, this);
+			TickDynamicMod.instance.timedObjects.put(configEntry, this);
 		else
-			mod.timedObjects.put(name, this);
+			TickDynamicMod.instance.timedObjects.put(name, this);
 		this.name = name;
-		this.mod = mod;
 		this.world = world;
 		this.configEntry = configEntry;
 
@@ -58,9 +50,8 @@ public class TimedGroup implements ITimed {
 		setTimeMax(0);
 
 		int configSlices = 100;
-		int configMinimumObjects = 1;
 		if (configEntry != null)
-			configSlices = mod.config.get(configEntry, configKeySlicesMax, configSlices).getInt();
+			configSlices = TickDynamicMod.instance.config.get(configEntry, configKeySlicesMax, configSlices).getInt();
 		setSliceMax(configSlices);
 	}
 

@@ -27,8 +27,8 @@ public class TimedEntities extends TimedGroup {
 	public double averageTPS;
 
 
-	public TimedEntities(TickDynamicMod mod, World world, String name, String configEntry, TimedGroup base) {
-		super(mod, world, name, configEntry);
+	public TimedEntities(World world, String name, String configEntry, TimedGroup base) {
+		super(world, name, configEntry);
 		this.base = base;
 	}
 
@@ -42,10 +42,10 @@ public class TimedEntities extends TimedGroup {
 		setTimeMax(0);
 
 		if (this.base == null) {
-			setSliceMax(mod.defaultEntitySlicesMax);
-			setMinimumObjects(mod.defaultEntityMinimumObjects);
-			setMinimumTPS(mod.defaultEntityMinimumTPS);
-			setMinimumTime(mod.defaultEntityMinimumTime);
+			setSliceMax(TickDynamicMod.instance.defaultEntitySlicesMax);
+			setMinimumObjects(TickDynamicMod.instance.defaultEntityMinimumObjects);
+			setMinimumTPS(TickDynamicMod.instance.defaultEntityMinimumTPS);
+			setMinimumTime(TickDynamicMod.instance.defaultEntityMinimumTime);
 		} else {
 			setSliceMax(base.getSliceMax());
 			if (base instanceof TimedEntities) {
@@ -65,36 +65,36 @@ public class TimedEntities extends TimedGroup {
 			return;
 
 		String comment = "The number of slices given to this Group";
-		if (base != null && !mod.config.hasKey(configEntry, configKeySlicesMax))
-			sliceMax = mod.config.get(base.configEntry, configKeySlicesMax, sliceMax, comment).getInt();
+		if (base != null && !TickDynamicMod.instance.config.hasKey(configEntry, configKeySlicesMax))
+			sliceMax = TickDynamicMod.instance.config.get(base.configEntry, configKeySlicesMax, sliceMax, comment).getInt();
 		else
-			sliceMax = mod.config.get(configEntry, configKeySlicesMax, sliceMax, comment).getInt();
+			sliceMax = TickDynamicMod.instance.config.get(configEntry, configKeySlicesMax, sliceMax, comment).getInt();
 		setSliceMax(sliceMax);
 
 		comment = "Minimum number of objects to tick, independent of slices. Set to 0 to disable.";
-		if (base != null && !mod.config.hasKey(configEntry, configKeyMinimumObjects))
-			minimumObjects = mod.config.get(base.configEntry, configKeyMinimumObjects, minimumObjects, comment).getInt();
+		if (base != null && !TickDynamicMod.instance.config.hasKey(configEntry, configKeyMinimumObjects))
+			minimumObjects = TickDynamicMod.instance.config.get(base.configEntry, configKeyMinimumObjects, minimumObjects, comment).getInt();
 		else
-			minimumObjects = mod.config.get(configEntry, configKeyMinimumObjects, minimumObjects, comment).getInt();
+			minimumObjects = TickDynamicMod.instance.config.get(configEntry, configKeyMinimumObjects, minimumObjects, comment).getInt();
 		setMinimumObjects(minimumObjects);
 
 		comment = "Minimum TPS to keep, independent of slices. Set to 0 to disable.";
-		if (base != null && !mod.config.hasKey(configEntry, configKeyMinimumTPS))
-			minimumTPS = (float) mod.config.get(base.configEntry, configKeyMinimumTPS, minimumTPS, comment).getDouble();
+		if (base != null && !TickDynamicMod.instance.config.hasKey(configEntry, configKeyMinimumTPS))
+			minimumTPS = (float) TickDynamicMod.instance.config.get(base.configEntry, configKeyMinimumTPS, minimumTPS, comment).getDouble();
 		else
-			minimumTPS = (float) mod.config.get(configEntry, configKeyMinimumTPS, minimumTPS, comment).getDouble();
+			minimumTPS = (float) TickDynamicMod.instance.config.get(configEntry, configKeyMinimumTPS, minimumTPS, comment).getDouble();
 		setMinimumTPS(minimumTPS);
 
 		comment = "Minimum Time to keep(In milliseconds), independent of slices. Set to 0 to disable.";
-		if (base != null && !mod.config.hasKey(configEntry, configKeyMinimumTime))
-			minimumTime = (float) mod.config.get(base.configEntry, configKeyMinimumTime, minimumTime, comment).getDouble();
+		if (base != null && !TickDynamicMod.instance.config.hasKey(configEntry, configKeyMinimumTime))
+			minimumTime = (float) TickDynamicMod.instance.config.get(base.configEntry, configKeyMinimumTime, minimumTime, comment).getDouble();
 		else
-			minimumTime = (float) mod.config.get(configEntry, configKeyMinimumTime, minimumTime, comment).getDouble();
+			minimumTime = (float) TickDynamicMod.instance.config.get(configEntry, configKeyMinimumTime, minimumTime, comment).getDouble();
 		setMinimumTime(minimumTime);
 
 		//Save any default values
 		if (saveDefaults)
-			mod.queueSaveConfig();
+			TickDynamicMod.instance.queueSaveConfig();
 	}
 
 	@Override
@@ -110,7 +110,7 @@ public class TimedEntities extends TimedGroup {
 		mod.config.get(configEntry, configKeyMinimumTime, mod.defaultEntityMinimumTime).setValue(getMinimumTime());*/
 
 		if (saveFile)
-			mod.queueSaveConfig();
+			TickDynamicMod.instance.queueSaveConfig();
 	}
 
 	public void setMinimumObjects(int minimum) {
@@ -140,7 +140,7 @@ public class TimedEntities extends TimedGroup {
 	//Calculate how many objects can run within the given timeMax.
 	//It calculates this using an average for the time used by the objects.(timeUsed/objectCount)
 	public int getTargetObjectCount() {
-		if (timeMax == 0 || !mod.enabled) //No limit set
+		if (timeMax == 0 || !TickDynamicMod.instance.enabled) //No limit set
 			return Integer.MAX_VALUE;
 
 		double timePerObject = (int) Math.ceil((double) getTimeUsedAverage() / (double) getObjectsRunAverage());
@@ -175,14 +175,14 @@ public class TimedEntities extends TimedGroup {
 	//Return: The starting offset
 	public int startUpdateObjects() {
 		if (entityGroup == null) {
-			if (mod.debug)
+			if (TickDynamicMod.debug)
 				System.err.println("No EntityGroup for group:" + this.getName());
 			return 0; //No entities to time
 		}
 
 		int listSize = entityGroup.getEntityCount();
 
-		if (!mod.enabled)
+		if (!TickDynamicMod.instance.enabled)
 			return listSize; //If disabled, update everything
 
 		updateCount = getTargetObjectCount();
@@ -216,7 +216,7 @@ public class TimedEntities extends TimedGroup {
 	//Keeps track of position for next run.
 	//Takes the number of entities that was updated.
 	public void endUpdateObjects(int entitiesUpdated) {
-		if (!mod.enabled || entityGroup == null)
+		if (!TickDynamicMod.instance.enabled || entityGroup == null)
 			return;
 
 		int listSize = entityGroup.getEntityCount();
@@ -235,7 +235,7 @@ public class TimedEntities extends TimedGroup {
 		super.newTick(clearChildren);
 
 		//Calculate average TPS
-		if (listTPS.size() >= mod.defaultAverageTicks)
+		if (listTPS.size() >= TickDynamicMod.instance.defaultAverageTicks)
 			listTPS.removeFirst();
 		listTPS.add(currentTPS);
 

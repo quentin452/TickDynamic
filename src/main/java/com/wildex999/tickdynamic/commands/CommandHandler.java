@@ -17,7 +17,6 @@ public class CommandHandler implements ICommand {
 	private List<String> aliases;
 	private Map<String, ICommand> subCommandHandlers;
 	private String listSubCommands;
-	private TickDynamicMod mod;
 
 	public enum SubCommands {
 		tps,
@@ -30,19 +29,18 @@ public class CommandHandler implements ICommand {
 		help
 	}
 
-	public CommandHandler(TickDynamicMod mod) {
-		this.mod = mod;
+	public CommandHandler() {
 
 		aliases = new ArrayList<>();
 		aliases.add("tickdynamic");
 		aliases.add("td");
 
 		subCommandHandlers = new HashMap<>();
-		subCommandHandlers.put("reload", new CommandReload(mod));
-		subCommandHandlers.put("reloadgroups", new CommandReloadGroups(mod));
-		subCommandHandlers.put("listworlds", new CommandListWorlds(mod));
-		subCommandHandlers.put("world", new CommandWorld(mod));
-		subCommandHandlers.put("enabled", new CommandEnabled(mod));
+		subCommandHandlers.put("reload", new CommandReload());
+		subCommandHandlers.put("reloadgroups", new CommandReloadGroups());
+		subCommandHandlers.put("listworlds", new CommandListWorlds());
+		subCommandHandlers.put("world", new CommandWorld());
+		subCommandHandlers.put("enabled", new CommandEnabled());
 
 		StringBuilder builderSubCommands = new StringBuilder();
 		SubCommands[] subs = SubCommands.values();
@@ -78,7 +76,7 @@ public class CommandHandler implements ICommand {
 		switch (args[0]) {
 			case "tps":
 
-				sender.sendMessage(new TextComponentString("Average TPS: " + getTPSFormatted(mod) + " TPS"));
+				sender.sendMessage(new TextComponentString("Average TPS: " + getTPSFormatted() + " TPS"));
 				return;
 			case "identify":
 				sender.sendMessage(new TextComponentString("Command not yet implemented! This will allow you to check what group a Tile or Entity belongs to by right clicking it.(And other info, like TPS)"));
@@ -135,19 +133,19 @@ public class CommandHandler implements ICommand {
 		return 0;
 	}
 
-	public static String getTPSFormatted(TickDynamicMod mod) {
+	public static String getTPSFormatted() {
 		String tpsOut;
 		String color;
 
-		if (mod.averageTPS >= 19)
+		if (TickDynamicMod.instance.averageTPS >= 19)
 			color = TextFormatting.GREEN.toString();
-		else if (mod.averageTPS > 10)
+		else if (TickDynamicMod.instance.averageTPS > 10)
 			color = TextFormatting.YELLOW.toString();
 		else
 			color = TextFormatting.RED.toString();
 
 		DecimalFormat tpsFormat = new DecimalFormat("#.00");
-		tpsOut = color + tpsFormat.format(mod.averageTPS) + TextFormatting.RESET;
+		tpsOut = color + tpsFormat.format(TickDynamicMod.instance.averageTPS) + TextFormatting.RESET;
 		return tpsOut;
 	}
 

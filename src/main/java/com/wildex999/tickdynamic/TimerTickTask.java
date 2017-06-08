@@ -6,28 +6,22 @@ import java.util.TimerTask;
 
 public class TimerTickTask extends TimerTask {
 
-	private TickDynamicMod mod;
-
-	public TimerTickTask(TickDynamicMod mod) {
-		this.mod = mod;
-	}
-
 	@Override
 	public void run() {
 		try {
-			mod.tpsMutex.acquire();
+			TickDynamicMod.instance.tpsMutex.acquire();
 
-			if (mod.tpsList.size() >= mod.tpsAverageSeconds)
-				mod.tpsList.removeFirst();
-			mod.tpsList.add(mod.tickCounter);
-			mod.tickCounter = 0;
+			if (TickDynamicMod.instance.tpsList.size() >= TickDynamicMod.instance.tpsAverageSeconds)
+				TickDynamicMod.instance.tpsList.removeFirst();
+			TickDynamicMod.instance.tpsList.add(TickDynamicMod.instance.tickCounter);
+			TickDynamicMod.instance.tickCounter = 0;
 
 		} catch (InterruptedException e) {
 			System.err.println("Exception during TPS Calculation:");
 			e.printStackTrace();
 		} finally {
-			if (mod != null && mod.tpsMutex != null)
-				mod.tpsMutex.release();
+			if (TickDynamicMod.instance != null && TickDynamicMod.instance.tpsMutex != null)
+				TickDynamicMod.instance.tpsMutex.release();
 		}
 
 	}
