@@ -1,2 +1,1 @@
-Minor fixes
-Crash fix
+More testing was done to ensure that this build works correctly. Fixed a crash, and a few bugs.
