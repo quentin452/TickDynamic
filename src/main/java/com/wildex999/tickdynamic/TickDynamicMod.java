@@ -81,7 +81,6 @@ public class TickDynamicMod {
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		tpsMutex = new Semaphore(1);
-		tpsTimer = new Timer();
 		tpsList = Lists.newLinkedList();
 		config = new Configuration(event.getSuggestedConfigurationFile());
 	}
@@ -132,6 +131,7 @@ public class TickDynamicMod {
 	public void serverStart(FMLServerStartingEvent event) {
 		event.registerServerCommand(new CommandHandler());
 
+		tpsTimer = new Timer();
 		tpsTimer.schedule(new TimerTickTask(), 1000, 1000);
 
 		server = event.getServer();
