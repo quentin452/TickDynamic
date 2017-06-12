@@ -1,1 +1,2 @@
 Fixed a crash
+Fixed TickDynamic not loading in worlds outside the dev environment
