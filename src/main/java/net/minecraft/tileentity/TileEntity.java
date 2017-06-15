@@ -1,7 +1,8 @@
 package net.minecraft.tileentity;
 
-import com.wildex999.tickdynamic.listinject.EntityObject;
+import javax.annotation.Nullable;
 
+import com.wildex999.tickdynamic.listinject.EntityObject;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockJukebox;
 import net.minecraft.block.state.IBlockState;
@@ -22,12 +23,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nullable;
-
 public abstract class TileEntity extends EntityObject implements net.minecraftforge.common.capabilities.ICapabilitySerializable<NBTTagCompound>
 {
     private static final Logger LOGGER = LogManager.getLogger();
-    private static final RegistryNamespaced<ResourceLocation, Class <? extends TileEntity >> REGISTRY = net.minecraftforge.fml.common.registry.GameData.getTileEntityRegistry();
+    private static final RegistryNamespaced < ResourceLocation, Class <? extends TileEntity >> REGISTRY = net.minecraftforge.fml.common.registry.GameData.getTileEntityRegistry();
     /** the instance of the world the tile entity is in. */
     protected World world;
     protected BlockPos pos = BlockPos.ORIGIN;
@@ -44,7 +43,7 @@ public abstract class TileEntity extends EntityObject implements net.minecraftfo
     @Nullable
     public static ResourceLocation getKey(Class <? extends TileEntity > p_190559_0_)
     {
-        return (ResourceLocation)REGISTRY.getNameForObject(p_190559_0_);
+        return REGISTRY.getNameForObject(p_190559_0_);
     }
 
     /**
@@ -85,7 +84,7 @@ public abstract class TileEntity extends EntityObject implements net.minecraftfo
 
     private NBTTagCompound writeInternal(NBTTagCompound compound)
     {
-        ResourceLocation resourcelocation = (ResourceLocation)REGISTRY.getNameForObject(this.getClass());
+        ResourceLocation resourcelocation = REGISTRY.getNameForObject(this.getClass());
 
         if (resourcelocation == null)
         {
@@ -116,12 +115,12 @@ public abstract class TileEntity extends EntityObject implements net.minecraftfo
 
             if (oclass != null)
             {
-                tileentity = (TileEntity)oclass.newInstance();
+                tileentity = oclass.newInstance();
             }
         }
         catch (Throwable throwable1)
         {
-            LOGGER.error("Failed to create block entity {}", new Object[] {s, throwable1});
+            LOGGER.error("Failed to create block entity {}", s, throwable1);
             net.minecraftforge.fml.common.FMLLog.log(org.apache.logging.log4j.Level.ERROR, throwable1,
                     "A TileEntity %s(%s) has thrown an exception during loading, its state cannot be restored. Report this to the mod author",
                     s, oclass.getName());
@@ -136,7 +135,7 @@ public abstract class TileEntity extends EntityObject implements net.minecraftfo
             }
             catch (Throwable throwable)
             {
-                LOGGER.error("Failed to load data for block entity {}", new Object[] {s, throwable});
+                LOGGER.error("Failed to load data for block entity {}", s, throwable);
                 net.minecraftforge.fml.common.FMLLog.log(org.apache.logging.log4j.Level.ERROR, throwable,
                         "A TileEntity %s(%s) has thrown an exception during loading, its state cannot be restored. Report this to the mod author",
                         s, oclass.getName());
@@ -145,7 +144,7 @@ public abstract class TileEntity extends EntityObject implements net.minecraftfo
         }
         else
         {
-            LOGGER.warn("Skipping BlockEntity with id {}", new Object[] {s});
+            LOGGER.warn("Skipping BlockEntity with id {}", (Object)s);
         }
 
         return tileentity;
@@ -265,7 +264,7 @@ public abstract class TileEntity extends EntityObject implements net.minecraftfo
 
     public void addInfoToCrashReport(CrashReportCategory reportCategory)
     {
-        reportCategory.setDetail("Name", new ICrashReportDetail<String>()
+        reportCategory.addDetail("Name", new ICrashReportDetail<String>()
         {
             public String call() throws Exception
             {
@@ -276,7 +275,7 @@ public abstract class TileEntity extends EntityObject implements net.minecraftfo
         if (this.world != null)
         {
             CrashReportCategory.addBlockInfo(reportCategory, this.pos, this.getBlockType(), this.getBlockMetadata());
-            reportCategory.setDetail("Actual block type", new ICrashReportDetail<String>()
+            reportCategory.addDetail("Actual block type", new ICrashReportDetail<String>()
             {
                 public String call() throws Exception
                 {
@@ -284,7 +283,7 @@ public abstract class TileEntity extends EntityObject implements net.minecraftfo
 
                     try
                     {
-                        return String.format("ID #%d (%s // %s)", new Object[] {Integer.valueOf(i), Block.getBlockById(i).getUnlocalizedName(), Block.getBlockById(i).getClass().getCanonicalName()});
+                        return String.format("ID #%d (%s // %s)", i, Block.getBlockById(i).getUnlocalizedName(), Block.getBlockById(i).getClass().getCanonicalName());
                     }
                     catch (Throwable var3)
                     {
@@ -292,7 +291,7 @@ public abstract class TileEntity extends EntityObject implements net.minecraftfo
                     }
                 }
             });
-            reportCategory.setDetail("Actual block data value", new ICrashReportDetail<String>()
+            reportCategory.addDetail("Actual block data value", new ICrashReportDetail<String>()
             {
                 public String call() throws Exception
                 {
@@ -305,8 +304,8 @@ public abstract class TileEntity extends EntityObject implements net.minecraftfo
                     }
                     else
                     {
-                        String s = String.format("%4s", new Object[] {Integer.toBinaryString(i)}).replace(" ", "0");
-                        return String.format("%1$d / 0x%1$X / 0b%2$s", new Object[] {Integer.valueOf(i), s});
+                        String s = String.format("%4s", Integer.toBinaryString(i)).replace(" ", "0");
+                        return String.format("%1$d / 0x%1$X / 0b%2$s", i, s);
                     }
                 }
             });
@@ -381,7 +380,7 @@ public abstract class TileEntity extends EntityObject implements net.minecraftfo
      * @param world Current world
      * @param pos Tile's world position
      * @param oldState The old ID of the block
-     * @param newSate The new ID of the block (May be the same)
+     * @param newState The new ID of the block (May be the same)
      * @return true forcing the invalidation of the existing TE, false not to invalidate the existing TE
      */
     public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newSate)
@@ -490,9 +489,8 @@ public abstract class TileEntity extends EntityObject implements net.minecraftfo
 
 
     /**
-     * Called from the Chunk when this is first added to the world. Override instead of adding
-     * if (firstTick) stuff in update. Happens after validate and after it has been placed into the Chunk tileEntity
-     * map.
+     * Called when this is first added to the world (by {@link World#addTileEntity(TileEntity)}).
+     * Override instead of adding {@code if (firstTick)} stuff in update.
      */
     public void onLoad()
     {
@@ -565,5 +563,6 @@ public abstract class TileEntity extends EntityObject implements net.minecraftfo
         register("end_gateway", TileEntityEndGateway.class);
         register("command_block", TileEntityCommandBlock.class);
         register("shulker_box", TileEntityShulkerBox.class);
+        register("bed", TileEntityBed.class);
     }
 }

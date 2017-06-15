@@ -1,13 +1,25 @@
 package net.minecraft.entity;
 
-import java.util.*;
-
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.wildex999.tickdynamic.listinject.EntityObject;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
+import javax.annotation.Nullable;
 
-import net.minecraft.block.*;
+import com.wildex999.tickdynamic.listinject.EntityObject;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockFence;
+import net.minecraft.block.BlockFenceGate;
+import net.minecraft.block.BlockLiquid;
+import net.minecraft.block.BlockWall;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.EnumPushReaction;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -29,19 +41,39 @@ import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagDouble;
+import net.minecraft.nbt.NBTTagFloat;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.*;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumBlockRenderType;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.Mirror;
+import net.minecraft.util.ReportedException;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Rotation;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.datafix.DataFixer;
 import net.minecraft.util.datafix.FixTypes;
 import net.minecraft.util.datafix.IDataFixer;
 import net.minecraft.util.datafix.IDataWalker;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.event.HoverEvent;
@@ -55,182 +87,186 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nullable;
-
 public abstract class Entity extends EntityObject implements ICommandSender, net.minecraftforge.common.capabilities.ICapabilitySerializable<NBTTagCompound>
 {
-    private static final Logger LOGGER = LogManager.getLogger();
-    private static final List<ItemStack> EMPTY_EQUIPMENT = Collections.<ItemStack>emptyList();
-    private static final AxisAlignedBB ZERO_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
-    private static double renderDistanceWeight = 1.0D;
-    private static int nextEntityID;
-    private int entityId;
-    /**
-     * Blocks entities from spawning when they do their AABB check to make sure the spot is clear of entities that can
-     * prevent spawning.
-     */
-    public boolean preventEntitySpawning;
-    /** List of entities that are riding this entity */
-    private final List<Entity> riddenByEntities;
-    protected int rideCooldown;
-    private Entity ridingEntity;
-    public boolean forceSpawn;
-    /** Reference to the World object. */
-    public World world;
-    public double prevPosX;
-    public double prevPosY;
-    public double prevPosZ;
-    /** Entity position X */
-    public double posX;
-    /** Entity position Y */
-    public double posY;
-    /** Entity position Z */
-    public double posZ;
-    /** Entity motion X */
-    public double motionX;
-    /** Entity motion Y */
-    public double motionY;
-    /** Entity motion Z */
-    public double motionZ;
-    /** Entity rotation Yaw */
-    public float rotationYaw;
-    /** Entity rotation Pitch */
-    public float rotationPitch;
-    public float prevRotationYaw;
-    public float prevRotationPitch;
-    /** Axis aligned bounding box. */
-    private AxisAlignedBB boundingBox;
-    public boolean onGround;
-    /** True if after a move this entity has collided with something on X- or Z-axis */
-    public boolean isCollidedHorizontally;
-    /** True if after a move this entity has collided with something on Y-axis */
-    public boolean isCollidedVertically;
-    /** True if after a move this entity has collided with something either vertically or horizontally */
-    public boolean isCollided;
-    public boolean velocityChanged;
-    protected boolean isInWeb;
-    private boolean isOutsideBorder;
-    /** gets set by setEntityDead, so this must be the flag whether an Entity is dead (inactive may be better term) */
-    public boolean isDead;
-    /** How wide this entity is considered to be */
-    public float width;
-    /** How high this entity is considered to be */
-    public float height;
-    /** The previous ticks distance walked multiplied by 0.6 */
-    public float prevDistanceWalkedModified;
-    /** The distance walked multiplied by 0.6 */
-    public float distanceWalkedModified;
-    public float distanceWalkedOnStepModified;
-    public float fallDistance;
-    /** The distance that has to be exceeded in order to triger a new step sound and an onEntityWalking event on a block */
-    private int nextStepDistance;
-    /** The entity's X coordinate at the previous tick, used to calculate position during rendering routines */
-    public double lastTickPosX;
-    /** The entity's Y coordinate at the previous tick, used to calculate position during rendering routines */
-    public double lastTickPosY;
-    /** The entity's Z coordinate at the previous tick, used to calculate position during rendering routines */
-    public double lastTickPosZ;
-    /**
-     * How high this entity can step up when running into a block to try to get over it (currently make note the entity
-     * will always step up this amount and not just the amount needed)
-     */
-    public float stepHeight;
-    /** Whether this entity won't clip with collision or not (make note it won't disable gravity) */
-    public boolean noClip;
-    /** Reduces the velocity applied by entity collisions by the specified percent. */
-    public float entityCollisionReduction;
-    protected Random rand;
-    /** How many ticks has this entity had ran since being alive */
-    public int ticksExisted;
-    private int fire;
-    /** Whether this entity is currently inside of water (if it handles water movement that is) */
-    protected boolean inWater;
-    /** Remaining time an entity will be "immune" to further damage after being hurt. */
-    public int hurtResistantTime;
-    protected boolean firstUpdate;
-    protected boolean isImmuneToFire;
-    protected EntityDataManager dataManager;
-    protected static final DataParameter<Byte> FLAGS = EntityDataManager.<Byte>createKey(Entity.class, DataSerializers.BYTE);
-    private static final DataParameter<Integer> AIR = EntityDataManager.<Integer>createKey(Entity.class, DataSerializers.VARINT);
-    private static final DataParameter<String> CUSTOM_NAME = EntityDataManager.<String>createKey(Entity.class, DataSerializers.STRING);
-    private static final DataParameter<Boolean> CUSTOM_NAME_VISIBLE = EntityDataManager.<Boolean>createKey(Entity.class, DataSerializers.BOOLEAN);
-    private static final DataParameter<Boolean> SILENT = EntityDataManager.<Boolean>createKey(Entity.class, DataSerializers.BOOLEAN);
-    private static final DataParameter<Boolean> NO_GRAVITY = EntityDataManager.<Boolean>createKey(Entity.class, DataSerializers.BOOLEAN);
-    /** Has this entity been added to the chunk its within */
-    public boolean addedToChunk;
-    public int chunkCoordX;
-    public int chunkCoordY;
-    public int chunkCoordZ;
-    @SideOnly(Side.CLIENT)
-    public long serverPosX;
-    @SideOnly(Side.CLIENT)
-    public long serverPosY;
-    @SideOnly(Side.CLIENT)
-    public long serverPosZ;
-    /**
-     * Render entity even if it is outside the camera frustum. Only true in EntityFish for now. Used in RenderGlobal:
-     * render if ignoreFrustumCheck or in frustum.
-     */
-    public boolean ignoreFrustumCheck;
-    public boolean isAirBorne;
-    public int timeUntilPortal;
-    /** Whether the entity is inside a Portal */
-    protected boolean inPortal;
-    protected int portalCounter;
-    /** Which dimension the player is in (-1 = the Nether, 0 = normal world) */
-    public int dimension;
-    /** The position of the last portal the entity was in */
-    protected BlockPos lastPortalPos;
-    /** A horizontal vector related to the position of the last portal the entity was in */
-    protected Vec3d lastPortalVec;
-    /** A direction related to the position of the last portal the entity was in */
-    protected EnumFacing teleportDirection;
-    private boolean invulnerable;
-    protected UUID entityUniqueID;
-    protected String cachedUniqueIdString;
-    /** The command result statistics for this Entity. */
-    private final CommandResultStats cmdResultStats;
-    protected boolean glowing;
-    private final Set<String> tags;
-    private boolean isPositionDirty;
-    private double[] field_191505_aI;
-    private long field_191506_aJ;
+	private static final Logger LOGGER = LogManager.getLogger();
+	private static final List<ItemStack> EMPTY_EQUIPMENT = Collections.<ItemStack>emptyList();
+	private static final AxisAlignedBB ZERO_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
+	private static double renderDistanceWeight = 1.0D;
+	private static int nextEntityID;
+	private int entityId;
+	/**
+	 * Blocks entities from spawning when they do their AABB check to make sure the spot is clear of entities that can
+	 * prevent spawning.
+	 */
+	public boolean preventEntitySpawning;
+	/** List of entities that are riding this entity */
+	private final List<Entity> riddenByEntities;
+	protected int rideCooldown;
+	private Entity ridingEntity;
+	public boolean forceSpawn;
+	/** Reference to the World object. */
+	public World world;
+	public double prevPosX;
+	public double prevPosY;
+	public double prevPosZ;
+	/** Entity position X */
+	public double posX;
+	/** Entity position Y */
+	public double posY;
+	/** Entity position Z */
+	public double posZ;
+	/** Entity motion X */
+	public double motionX;
+	/** Entity motion Y */
+	public double motionY;
+	/** Entity motion Z */
+	public double motionZ;
+	/** Entity rotation Yaw */
+	public float rotationYaw;
+	/** Entity rotation Pitch */
+	public float rotationPitch;
+	public float prevRotationYaw;
+	public float prevRotationPitch;
+	/** Axis aligned bounding box. */
+	private AxisAlignedBB boundingBox;
+	public boolean onGround;
+	/** True if after a move this entity has collided with something on X- or Z-axis */
+	public boolean isCollidedHorizontally;
+	/** True if after a move this entity has collided with something on Y-axis */
+	public boolean isCollidedVertically;
+	/** True if after a move this entity has collided with something either vertically or horizontally */
+	public boolean isCollided;
+	public boolean velocityChanged;
+	protected boolean isInWeb;
+	private boolean isOutsideBorder;
+	/** gets set by setEntityDead, so this must be the flag whether an Entity is dead (inactive may be better term) */
+	public boolean isDead;
+	/** How wide this entity is considered to be */
+	public float width;
+	/** How high this entity is considered to be */
+	public float height;
+	/** The previous ticks distance walked multiplied by 0.6 */
+	public float prevDistanceWalkedModified;
+	/** The distance walked multiplied by 0.6 */
+	public float distanceWalkedModified;
+	public float distanceWalkedOnStepModified;
+	public float fallDistance;
+	/** The distance that has to be exceeded in order to triger a new step sound and an onEntityWalking event on a block */
+	private int nextStepDistance;
+	private float field_191959_ay;
+	/** The entity's X coordinate at the previous tick, used to calculate position during rendering routines */
+	public double lastTickPosX;
+	/** The entity's Y coordinate at the previous tick, used to calculate position during rendering routines */
+	public double lastTickPosY;
+	/** The entity's Z coordinate at the previous tick, used to calculate position during rendering routines */
+	public double lastTickPosZ;
+	/**
+	 * How high this entity can step up when running into a block to try to get over it (currently make note the entity
+	 * will always step up this amount and not just the amount needed)
+	 */
+	public float stepHeight;
+	/** Whether this entity won't clip with collision or not (make note it won't disable gravity) */
+	public boolean noClip;
+	/** Reduces the velocity applied by entity collisions by the specified percent. */
+	public float entityCollisionReduction;
+	protected Random rand;
+	/** How many ticks has this entity had ran since being alive */
+	public int ticksExisted;
+	private int fire;
+	/** Whether this entity is currently inside of water (if it handles water movement that is) */
+	protected boolean inWater;
+	/** Remaining time an entity will be "immune" to further damage after being hurt. */
+	public int hurtResistantTime;
+	protected boolean firstUpdate;
+	protected boolean isImmuneToFire;
+	protected EntityDataManager dataManager;
+	protected static final DataParameter<Byte> FLAGS = EntityDataManager.<Byte>createKey(Entity.class, DataSerializers.BYTE);
+	private static final DataParameter<Integer> AIR = EntityDataManager.<Integer>createKey(Entity.class, DataSerializers.VARINT);
+	private static final DataParameter<String> CUSTOM_NAME = EntityDataManager.<String>createKey(Entity.class, DataSerializers.STRING);
+	private static final DataParameter<Boolean> CUSTOM_NAME_VISIBLE = EntityDataManager.<Boolean>createKey(Entity.class, DataSerializers.BOOLEAN);
+	private static final DataParameter<Boolean> SILENT = EntityDataManager.<Boolean>createKey(Entity.class, DataSerializers.BOOLEAN);
+	private static final DataParameter<Boolean> NO_GRAVITY = EntityDataManager.<Boolean>createKey(Entity.class, DataSerializers.BOOLEAN);
+	/** Has this entity been added to the chunk its within */
+	public boolean addedToChunk;
+	public int chunkCoordX;
+	public int chunkCoordY;
+	public int chunkCoordZ;
+	@SideOnly(Side.CLIENT)
+	public long serverPosX;
+	@SideOnly(Side.CLIENT)
+	public long serverPosY;
+	@SideOnly(Side.CLIENT)
+	public long serverPosZ;
+	/**
+	 * Render entity even if it is outside the camera frustum. Only true in EntityFish for now. Used in RenderGlobal:
+	 * render if ignoreFrustumCheck or in frustum.
+	 */
+	public boolean ignoreFrustumCheck;
+	public boolean isAirBorne;
+	public int timeUntilPortal;
+	/** Whether the entity is inside a Portal */
+	protected boolean inPortal;
+	protected int portalCounter;
+	/** Which dimension the player is in (-1 = the Nether, 0 = normal world) */
+	public int dimension;
+	/** The position of the last portal the entity was in */
+	protected BlockPos lastPortalPos;
+	/** A horizontal vector related to the position of the last portal the entity was in */
+	protected Vec3d lastPortalVec;
+	/** A direction related to the position of the last portal the entity was in */
+	protected EnumFacing teleportDirection;
+	private boolean invulnerable;
+	protected UUID entityUniqueID;
+	protected String cachedUniqueIdString;
+	/** The command result statistics for this Entity. */
+	private final CommandResultStats cmdResultStats;
+	protected boolean glowing;
+	private final Set<String> tags;
+	private boolean isPositionDirty;
+	private final double[] field_191505_aI;
+	private long field_191506_aJ;
+	/**
+	 * Setting this to true will prevent the world from calling {@link #onUpdate()} for this entity.
+	 */
+	public boolean updateBlocked;
 
-    public Entity(World worldIn)
-    {
-	    this.entityId = nextEntityID++;
-	    this.riddenByEntities = Lists.<Entity>newArrayList();
-	    this.boundingBox = ZERO_AABB;
-	    this.width = 0.6F;
-	    this.height = 1.8F;
-	    this.nextStepDistance = 1;
-	    this.rand = new Random();
-	    this.fire = -this.getFireImmuneTicks();
-	    this.firstUpdate = true;
-	    this.entityUniqueID = MathHelper.getRandomUUID(this.rand);
-	    this.cachedUniqueIdString = this.entityUniqueID.toString();
-	    this.cmdResultStats = new CommandResultStats();
-	    this.tags = Sets.<String>newHashSet();
-	    this.field_191505_aI = new double[] {0.0D, 0.0D, 0.0D};
-	    this.world = worldIn;
-	    this.setPosition(0.0D, 0.0D, 0.0D);
+	public Entity(World worldIn)
+	{
+		this.entityId = nextEntityID++;
+		this.riddenByEntities = Lists.<Entity>newArrayList();
+		this.boundingBox = ZERO_AABB;
+		this.width = 0.6F;
+		this.height = 1.8F;
+		this.nextStepDistance = 1;
+		this.field_191959_ay = 1.0F;
+		this.rand = new Random();
+		this.fire = -this.getFireImmuneTicks();
+		this.firstUpdate = true;
+		this.entityUniqueID = MathHelper.getRandomUUID(this.rand);
+		this.cachedUniqueIdString = this.entityUniqueID.toString();
+		this.cmdResultStats = new CommandResultStats();
+		this.tags = Sets.<String>newHashSet();
+		this.field_191505_aI = new double[] {0.0D, 0.0D, 0.0D};
+		this.world = worldIn;
+		this.setPosition(0.0D, 0.0D, 0.0D);
 
-	    if (worldIn != null)
-	    {
-		    this.dimension = worldIn.provider.getDimension();
-	    }
+		if (worldIn != null)
+		{
+			this.dimension = worldIn.provider.getDimension();
+		}
 
-	    this.dataManager = new EntityDataManager(this);
-	    this.dataManager.register(FLAGS, Byte.valueOf((byte)0));
-	    this.dataManager.register(AIR, Integer.valueOf(300));
-	    this.dataManager.register(CUSTOM_NAME_VISIBLE, Boolean.valueOf(false));
-	    this.dataManager.register(CUSTOM_NAME, "");
-	    this.dataManager.register(SILENT, Boolean.valueOf(false));
-	    this.dataManager.register(NO_GRAVITY, Boolean.valueOf(false));
-	    this.entityInit();
-	    net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.event.entity.EntityEvent.EntityConstructing(this));
-	    capabilities = net.minecraftforge.event.ForgeEventFactory.gatherCapabilities(this);
-    }
+		this.dataManager = new EntityDataManager(this);
+		this.dataManager.register(FLAGS, Byte.valueOf((byte)0));
+		this.dataManager.register(AIR, Integer.valueOf(300));
+		this.dataManager.register(CUSTOM_NAME_VISIBLE, Boolean.valueOf(false));
+		this.dataManager.register(CUSTOM_NAME, "");
+		this.dataManager.register(SILENT, Boolean.valueOf(false));
+		this.dataManager.register(NO_GRAVITY, Boolean.valueOf(false));
+		this.entityInit();
+		net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.event.entity.EntityEvent.EntityConstructing(this));
+		capabilities = net.minecraftforge.event.ForgeEventFactory.gatherCapabilities(this);
+	}
 
 	/** Forge: Used to store custom data for each entity. */
 	private NBTTagCompound customEntityData;
@@ -288,7 +324,14 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 
 	public boolean equals(Object p_equals_1_)
 	{
-		return p_equals_1_ instanceof Entity ? ((Entity)p_equals_1_).entityId == this.entityId : false;
+		if (p_equals_1_ instanceof Entity)
+		{
+			return ((Entity)p_equals_1_).entityId == this.entityId;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	public int hashCode()
@@ -537,7 +580,7 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 
 		if (this.posY < -64.0D)
 		{
-			this.kill();
+			this.outOfWorld();
 		}
 
 		if (!this.world.isRemote)
@@ -609,7 +652,7 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 	/**
 	 * sets the dead flag. Used when you fall off the bottom of the world.
 	 */
-	protected void kill()
+	protected void outOfWorld()
 	{
 		this.setDead();
 	}
@@ -782,7 +825,7 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 				}
 			}
 
-			List<AxisAlignedBB> list1 = this.world.getCollisionBoxes(this, this.getEntityBoundingBox().addCoord(x, y, z));
+			List<AxisAlignedBB> list1 = this.world.getCollisionBoxes(this, this.getEntityBoundingBox().expand(x, y, z));
 			AxisAlignedBB axisalignedbb = this.getEntityBoundingBox();
 
 			if (y != 0.0D)
@@ -837,9 +880,9 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 				AxisAlignedBB axisalignedbb1 = this.getEntityBoundingBox();
 				this.setEntityBoundingBox(axisalignedbb);
 				y = (double)this.stepHeight;
-				List<AxisAlignedBB> list = this.world.getCollisionBoxes(this, this.getEntityBoundingBox().addCoord(d2, y, d4));
+				List<AxisAlignedBB> list = this.world.getCollisionBoxes(this, this.getEntityBoundingBox().expand(d2, y, d4));
 				AxisAlignedBB axisalignedbb2 = this.getEntityBoundingBox();
-				AxisAlignedBB axisalignedbb3 = axisalignedbb2.addCoord(d2, 0.0D, d4);
+				AxisAlignedBB axisalignedbb3 = axisalignedbb2.expand(d2, 0.0D, d4);
 				double d8 = y;
 				int j1 = 0;
 
@@ -1017,6 +1060,10 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 						this.playStepSound(blockpos, block);
 					}
 				}
+				else if (this.distanceWalkedOnStepModified > this.field_191959_ay && this.func_191957_ae() && iblockstate.getMaterial() == Material.AIR)
+				{
+					this.field_191959_ay = this.func_191954_d(this.distanceWalkedOnStepModified);
+				}
 			}
 
 			try
@@ -1033,7 +1080,7 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 
 			boolean flag1 = this.isWet();
 
-			if (this.world.isFlammableWithin(this.getEntityBoundingBox().contract(0.001D)))
+			if (this.world.isFlammableWithin(this.getEntityBoundingBox().shrink(0.001D)))
 			{
 				this.dealFireDamage(1);
 
@@ -1104,6 +1151,7 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 						try
 						{
 							iblockstate.getBlock().onEntityCollidedWithBlock(this.world, blockpos$pooledmutableblockpos2, iblockstate, this);
+							this.func_191955_a(iblockstate);
 						}
 						catch (Throwable throwable)
 						{
@@ -1122,6 +1170,10 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 		blockpos$pooledmutableblockpos2.release();
 	}
 
+	protected void func_191955_a(IBlockState p_191955_1_)
+	{
+	}
+
 	protected void playStepSound(BlockPos pos, Block blockIn)
 	{
 		SoundType soundtype = blockIn.getSoundType(world.getBlockState(pos), world, pos, this);
@@ -1135,6 +1187,16 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 		{
 			this.playSound(soundtype.getStepSound(), soundtype.getVolume() * 0.15F, soundtype.getPitch());
 		}
+	}
+
+	protected float func_191954_d(float p_191954_1_)
+	{
+		return 0.0F;
+	}
+
+	protected boolean func_191957_ae()
+	{
+		return false;
 	}
 
 	public void playSound(SoundEvent soundIn, float volume, float pitch)
@@ -1268,6 +1330,11 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 		return this.inWater;
 	}
 
+	public boolean func_191953_am()
+	{
+		return this.world.handleMaterialAcceleration(this.getEntityBoundingBox().grow(0.0D, -20.0D, 0.0D).shrink(0.001D), Material.WATER, this);
+	}
+
 	/**
 	 * Returns if this entity is in water and will end up adding the waters velocity to the entity
 	 */
@@ -1277,11 +1344,11 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 		{
 			this.inWater = false;
 		}
-		else if (this.world.handleMaterialAcceleration(this.getEntityBoundingBox().expand(0.0D, -0.4000000059604645D, 0.0D).contract(0.001D), Material.WATER, this))
+		else if (this.world.handleMaterialAcceleration(this.getEntityBoundingBox().grow(0.0D, -0.4000000059604645D, 0.0D).shrink(0.001D), Material.WATER, this))
 		{
 			if (!this.inWater && !this.firstUpdate)
 			{
-				this.resetHeight();
+				this.doWaterSplashEffect();
 			}
 
 			this.fallDistance = 0.0F;
@@ -1297,9 +1364,10 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 	}
 
 	/**
-	 * sets the players height back to normal after doing things like sleeping and dieing
+	 * Plays the {@link #getSplashSound() splash sound}, and the {@link ParticleType#WATER_BUBBLE} and {@link
+	 * ParticleType#WATER_SPLASH} particles.
 	 */
-	protected void resetHeight()
+	protected void doWaterSplashEffect()
 	{
 		Entity entity = this.isBeingRidden() && this.getControllingPassenger() != null ? this.getControllingPassenger() : this;
 		float f = entity == this ? 0.2F : 0.9F;
@@ -1317,14 +1385,14 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 		{
 			float f3 = (this.rand.nextFloat() * 2.0F - 1.0F) * this.width;
 			float f4 = (this.rand.nextFloat() * 2.0F - 1.0F) * this.width;
-			this.world.spawnParticle(EnumParticleTypes.WATER_BUBBLE, this.posX + (double)f3, (double)(f2 + 1.0F), this.posZ + (double)f4, this.motionX, this.motionY - (double)(this.rand.nextFloat() * 0.2F), this.motionZ, new int[0]);
+			this.world.spawnParticle(EnumParticleTypes.WATER_BUBBLE, this.posX + (double)f3, (double)(f2 + 1.0F), this.posZ + (double)f4, this.motionX, this.motionY - (double)(this.rand.nextFloat() * 0.2F), this.motionZ);
 		}
 
 		for (int j = 0; (float)j < 1.0F + this.width * 20.0F; ++j)
 		{
 			float f5 = (this.rand.nextFloat() * 2.0F - 1.0F) * this.width;
 			float f6 = (this.rand.nextFloat() * 2.0F - 1.0F) * this.width;
-			this.world.spawnParticle(EnumParticleTypes.WATER_SPLASH, this.posX + (double)f5, (double)(f2 + 1.0F), this.posZ + (double)f6, this.motionX, this.motionY, this.motionZ, new int[0]);
+			this.world.spawnParticle(EnumParticleTypes.WATER_SPLASH, this.posX + (double)f5, (double)(f2 + 1.0F), this.posZ + (double)f6, this.motionX, this.motionY, this.motionZ);
 		}
 	}
 
@@ -1349,7 +1417,7 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 
 		if (iblockstate.getRenderType() != EnumBlockRenderType.INVISIBLE)
 		{
-			this.world.spawnParticle(EnumParticleTypes.BLOCK_CRACK, this.posX + ((double)this.rand.nextFloat() - 0.5D) * (double)this.width, this.getEntityBoundingBox().minY + 0.1D, this.posZ + ((double)this.rand.nextFloat() - 0.5D) * (double)this.width, -this.motionX * 4.0D, 1.5D, -this.motionZ * 4.0D, new int[] {Block.getStateId(iblockstate)});
+			this.world.spawnParticle(EnumParticleTypes.BLOCK_CRACK, this.posX + ((double)this.rand.nextFloat() - 0.5D) * (double)this.width, this.getEntityBoundingBox().minY + 0.1D, this.posZ + ((double)this.rand.nextFloat() - 0.5D) * (double)this.width, -this.motionX * 4.0D, 1.5D, -this.motionZ * 4.0D, Block.getStateId(iblockstate));
 		}
 	}
 
@@ -1384,15 +1452,12 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 
 	public boolean isInLava()
 	{
-		return this.world.isMaterialInBB(this.getEntityBoundingBox().expand(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.LAVA);
+		return this.world.isMaterialInBB(this.getEntityBoundingBox().grow(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.LAVA);
 	}
 
-	/**
-	 * Used in both water and by flying objects
-	 */
-	public void moveRelative(float strafe, float forward, float friction)
+	public void func_191958_b(float p_191958_1_, float p_191958_2_, float p_191958_3_, float p_191958_4_)
 	{
-		float f = strafe * strafe + forward * forward;
+		float f = p_191958_1_ * p_191958_1_ + p_191958_2_ * p_191958_2_ + p_191958_3_ * p_191958_3_;
 
 		if (f >= 1.0E-4F)
 		{
@@ -1403,18 +1468,20 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 				f = 1.0F;
 			}
 
-			f = friction / f;
-			strafe = strafe * f;
-			forward = forward * f;
+			f = p_191958_4_ / f;
+			p_191958_1_ = p_191958_1_ * f;
+			p_191958_2_ = p_191958_2_ * f;
+			p_191958_3_ = p_191958_3_ * f;
 			float f1 = MathHelper.sin(this.rotationYaw * 0.017453292F);
 			float f2 = MathHelper.cos(this.rotationYaw * 0.017453292F);
-			this.motionX += (double)(strafe * f2 - forward * f1);
-			this.motionZ += (double)(forward * f2 + strafe * f1);
+			this.motionX += (double)(p_191958_1_ * f2 - p_191958_3_ * f1);
+			this.motionY += (double)p_191958_2_;
+			this.motionZ += (double)(p_191958_3_ * f2 + p_191958_1_ * f1);
 		}
 	}
 
 	@SideOnly(Side.CLIENT)
-	public int getBrightnessForRender(float partialTicks)
+	public int getBrightnessForRender()
 	{
 		BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos(MathHelper.floor(this.posX), 0, MathHelper.floor(this.posZ));
 
@@ -1432,7 +1499,7 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 	/**
 	 * Gets how bright this entity is.
 	 */
-	public float getBrightness(float partialTicks)
+	public float getBrightness()
 	{
 		BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos(MathHelper.floor(this.posX), 0, MathHelper.floor(this.posZ));
 
@@ -1456,7 +1523,7 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 	}
 
 	/**
-	 * Sets the entity's position and rotation.
+	 * Sets position and rotation, clamping and wrapping params to valid values. Used by network code.
 	 */
 	public void setPositionAndRotation(double x, double y, double z, float yaw, float pitch)
 	{
@@ -1703,7 +1770,7 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 	{
 		Vec3d vec3d = this.getPositionEyes(partialTicks);
 		Vec3d vec3d1 = this.getLook(partialTicks);
-		Vec3d vec3d2 = vec3d.addVector(vec3d1.xCoord * blockReachDistance, vec3d1.yCoord * blockReachDistance, vec3d1.zCoord * blockReachDistance);
+		Vec3d vec3d2 = vec3d.addVector(vec3d1.x * blockReachDistance, vec3d1.y * blockReachDistance, vec3d1.z * blockReachDistance);
 		return this.world.rayTraceBlocks(vec3d, vec3d2, false, false, true);
 	}
 
@@ -1723,11 +1790,12 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 		return false;
 	}
 
-	/**
-	 * Adds to the players score.
-	 */
-	public void addToPlayerScore(Entity entityIn, int amount)
+	public void func_191956_a(Entity p_191956_1_, int p_191956_2_, DamageSource p_191956_3_)
 	{
+		if (p_191956_1_ instanceof EntityPlayerMP)
+		{
+			CriteriaTriggers.ENTITY_KILLED_PLAYER.trigger((EntityPlayerMP)p_191956_1_, this, p_191956_3_);
+		}
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -1825,9 +1893,9 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 	{
 		try
 		{
-			compound.setTag("Pos", this.newDoubleNBTList(new double[] {this.posX, this.posY, this.posZ}));
-			compound.setTag("Motion", this.newDoubleNBTList(new double[] {this.motionX, this.motionY, this.motionZ}));
-			compound.setTag("Rotation", this.newFloatNBTList(new float[] {this.rotationYaw, this.rotationPitch}));
+			compound.setTag("Pos", this.newDoubleNBTList(this.posX, this.posY, this.posZ));
+			compound.setTag("Motion", this.newDoubleNBTList(this.motionX, this.motionY, this.motionZ));
+			compound.setTag("Rotation", this.newFloatNBTList(this.rotationYaw, this.rotationPitch));
 			compound.setFloat("FallDistance", this.fallDistance);
 			compound.setShort("Fire", (short)this.fire);
 			compound.setShort("Air", (short)this.getAir());
@@ -1863,8 +1931,9 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 			{
 				compound.setBoolean("Glowing", this.glowing);
 			}
+			compound.setBoolean("UpdateBlocked", updateBlocked);
 
-			if (this.tags.size() > 0)
+			if (!this.tags.isEmpty())
 			{
 				NBTTagList nbttaglist = new NBTTagList();
 
@@ -1988,6 +2057,7 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 			this.setSilent(compound.getBoolean("Silent"));
 			this.setNoGravity(compound.getBoolean("NoGravity"));
 			this.setGlowing(compound.getBoolean("Glowing"));
+			updateBlocked = compound.getBoolean("UpdateBlocked");
 
 			if (compound.hasKey("ForgeData")) customEntityData = compound.getCompoundTag("ForgeData");
 			if (this.capabilities != null && compound.hasKey("ForgeCaps")) this.capabilities.deserializeNBT(compound.getCompoundTag("ForgeCaps"));
@@ -2184,7 +2254,8 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 			this.motionX = 0.0D;
 			this.motionY = 0.0D;
 			this.motionZ = 0.0D;
-			this.onUpdate();
+			if(!updateBlocked)
+				this.onUpdate();
 
 			if (this.isRiding())
 			{
@@ -2345,7 +2416,7 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 	 */
 	public Vec3d getLookVec()
 	{
-		return null;
+		return this.getVectorForRotation(this.rotationPitch, this.rotationYaw);
 	}
 
 	/**
@@ -2354,8 +2425,7 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 	@SideOnly(Side.CLIENT)
 	public Vec2f getPitchYaw()
 	{
-		Vec2f vec2f = new Vec2f(this.rotationPitch, this.rotationYaw);
-		return vec2f;
+		return new Vec2f(this.rotationPitch, this.rotationYaw);
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -2401,7 +2471,7 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 	}
 
 	/**
-	 * Updates the velocity of the entity to a new value.
+	 * Updates the entity motion clientside, called by packets from the server
 	 */
 	@SideOnly(Side.CLIENT)
 	public void setVelocity(double x, double y, double z)
@@ -2411,6 +2481,9 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 		this.motionZ = z;
 	}
 
+	/**
+	 * Handler for {@link World#setEntityState}
+	 */
 	@SideOnly(Side.CLIENT)
 	public void handleStatusUpdate(byte id)
 	{
@@ -2777,7 +2850,7 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 
 	public String toString()
 	{
-		return String.format("%s[\'%s\'/%d, l=\'%s\', x=%.2f, y=%.2f, z=%.2f]", new Object[] {this.getClass().getSimpleName(), this.getName(), Integer.valueOf(this.entityId), this.world == null ? "~NULL~" : this.world.getWorldInfo().getWorldName(), Double.valueOf(this.posX), Double.valueOf(this.posY), Double.valueOf(this.posZ)});
+		return String.format("%s['%s'/%d, l='%s', x=%.2f, y=%.2f, z=%.2f]", this.getClass().getSimpleName(), this.getName(), this.entityId, this.world == null ? "~NULL~" : this.world.getWorldInfo().getWorldName(), this.posX, this.posY, this.posZ);
 	}
 
 	/**
@@ -2832,13 +2905,13 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 			this.world.profiler.startSection("changeDimension");
 			MinecraftServer minecraftserver = this.getServer();
 			int i = this.dimension;
-			WorldServer worldserver = minecraftserver.worldServerForDimension(i);
-			WorldServer worldserver1 = minecraftserver.worldServerForDimension(dimensionIn);
+			WorldServer worldserver = minecraftserver.getWorld(i);
+			WorldServer worldserver1 = minecraftserver.getWorld(dimensionIn);
 			this.dimension = dimensionIn;
 
 			if (i == 1 && dimensionIn == 1)
 			{
-				worldserver1 = minecraftserver.worldServerForDimension(0);
+				worldserver1 = minecraftserver.getWorld(0);
 				this.dimension = 0;
 			}
 
@@ -2931,7 +3004,7 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 		return blockStateIn.getBlock().getExplosionResistance(worldIn, pos, this, explosionIn);
 	}
 
-	public boolean verifyExplosion(Explosion explosionIn, World worldIn, BlockPos pos, IBlockState blockStateIn, float p_174816_5_)
+	public boolean canExplosionDestroyBlock(Explosion explosionIn, World worldIn, BlockPos pos, IBlockState blockStateIn, float p_174816_5_)
 	{
 		return true;
 	}
@@ -2964,7 +3037,7 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 
 	public void addEntityCrashInfo(CrashReportCategory category)
 	{
-		category.setDetail("Entity Type", new ICrashReportDetail<String>()
+		category.addDetail("Entity Type", new ICrashReportDetail<String>()
 		{
 			public String call() throws Exception
 			{
@@ -2972,24 +3045,24 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 			}
 		});
 		category.addCrashSection("Entity ID", Integer.valueOf(this.entityId));
-		category.setDetail("Entity Name", new ICrashReportDetail<String>()
+		category.addDetail("Entity Name", new ICrashReportDetail<String>()
 		{
 			public String call() throws Exception
 			{
 				return Entity.this.getName();
 			}
 		});
-		category.addCrashSection("Entity\'s Exact location", String.format("%.2f, %.2f, %.2f", new Object[] {Double.valueOf(this.posX), Double.valueOf(this.posY), Double.valueOf(this.posZ)}));
-		category.addCrashSection("Entity\'s Block location", CrashReportCategory.getCoordinateInfo(MathHelper.floor(this.posX), MathHelper.floor(this.posY), MathHelper.floor(this.posZ)));
-		category.addCrashSection("Entity\'s Momentum", String.format("%.2f, %.2f, %.2f", new Object[] {Double.valueOf(this.motionX), Double.valueOf(this.motionY), Double.valueOf(this.motionZ)}));
-		category.setDetail("Entity\'s Passengers", new ICrashReportDetail<String>()
+		category.addCrashSection("Entity's Exact location", String.format("%.2f, %.2f, %.2f", this.posX, this.posY, this.posZ));
+		category.addCrashSection("Entity's Block location", CrashReportCategory.getCoordinateInfo(MathHelper.floor(this.posX), MathHelper.floor(this.posY), MathHelper.floor(this.posZ)));
+		category.addCrashSection("Entity's Momentum", String.format("%.2f, %.2f, %.2f", this.motionX, this.motionY, this.motionZ));
+		category.addDetail("Entity's Passengers", new ICrashReportDetail<String>()
 		{
 			public String call() throws Exception
 			{
 				return Entity.this.getPassengers().toString();
 			}
 		});
-		category.setDetail("Entity\'s Vehicle", new ICrashReportDetail<String>()
+		category.addDetail("Entity's Vehicle", new ICrashReportDetail<String>()
 		{
 			public String call() throws Exception
 			{
@@ -3640,7 +3713,15 @@ public abstract class Entity extends EntityObject implements ICommandSender, net
 	public boolean canPassengerSteer()
 	{
 		Entity entity = this.getControllingPassenger();
-		return entity instanceof EntityPlayer ? ((EntityPlayer)entity).isUser() : !this.world.isRemote;
+
+		if (entity instanceof EntityPlayer)
+		{
+			return ((EntityPlayer)entity).isUser();
+		}
+		else
+		{
+			return !this.world.isRemote;
+		}
 	}
 
 	/**
