@@ -38,7 +38,7 @@ def signJar(archivePath) {
     }
 }
 
-version = "0.5.8"
+version = "0.5.9"
 group= "com.wildex999.tickdynamic"
 archivesBaseName = "TickDynamic-1.12"
 

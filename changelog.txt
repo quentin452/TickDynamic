@@ -1,3 +1,1 @@
-Added Jar Signing
-Fixed some bugs and crashes
-The mod can now run server-side only.
+Added the ablity to disable all logs

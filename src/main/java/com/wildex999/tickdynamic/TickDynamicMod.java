@@ -50,6 +50,7 @@ public class TickDynamicMod {
 	public static final String MODID = "tickdynamic";
 	public static final String MODNAME = "Tick Dynamic";
 	public static final String VERSION = "${version}";
+	public static boolean nologs = false;
 	public static boolean debugGroups = false;
 	public static boolean debugTimer = false;
 	@Mod.Instance(MODID)
@@ -425,22 +426,27 @@ public class TickDynamicMod {
 	}
 
 	public static void logInfo(String log, Object... params) {
+		if(!nologs)
 		FMLLog.log(MODNAME, Level.INFO, log, params);
 	}
 
 	public static void logDebug(String log, Object... params) {
+		if(!nologs)
 		FMLLog.log(MODNAME, Level.DEBUG, log, params);
 	}
 
 	public static void logError(String log, Object... params) {
+		if(!nologs)
 		FMLLog.log(MODNAME, Level.ERROR, log, params);
 	}
 
 	public static void logTrace(String log, Object... params) {
+		if(!nologs)
 		FMLLog.log(MODNAME, Level.TRACE, log, params);
 	}
 
 	public static void logWarn(String log, Object... params) {
+		if(!nologs)
 		FMLLog.log(MODNAME, Level.WARN, log, params);
 	}
 }

@@ -44,7 +44,7 @@ public class TickDynamicConfig {
 
 		mod.enabled = mod.config.get("general", "enabled", true, "").getBoolean();
 
-		//mod.debug = mod.config.get("general", "debug", mod.debug, "Debug output. Warning: Might output a lot of data to console!").getBoolean();
+		mod.nologs = mod.config.get("general", "nologs", mod.nologs, "Disables all log output to the console. Make sure this is off before providing the author with logs.").getBoolean();
 
 		mod.debugGroups = mod.config.get("general", "debugGroups", mod.debugGroups, "Debug Group mapping and assignment. Will spam during world load and config reload!!!").getBoolean();
 
