@@ -40,7 +40,7 @@ def signJar(archivePath) {
 
 version = "0.5.7"
 group= "com.wildex999.tickdynamic"
-archivesBaseName = "TickDynamic-1.11.2"
+archivesBaseName = "TickDynamic-1.12"
 
 allprojects {
     sourceCompatibility = 1.8
@@ -49,10 +49,12 @@ allprojects {
 
 
 minecraft {
-    version = "1.11.2-13.20.0.2315"
+    version = "1.12-14.21.0.2327"
     runDir = "run"
     replace '${version}', project.version
-    mappings = "stable_32"
+    mappings = "snapshot_20170615"
+	
+	clientRunArgs += "-uuid=0b1ec5ad-cb2a-43b7-995d-889320eb2e5b -username=The_Fireplace"
 }
 
 dependencies {
@@ -143,7 +145,7 @@ curseforge {
     id = '269359'
     changelog = file('changelog.txt')
     releaseType = 'beta'
-    addGameVersion '1.11.2'
+    addGameVersion '1.12'
 	addGameVersion 'Java 8'
     mainArtifact(jar) {
         displayName = jar.archiveName.replace(".jar", "")
@@ -164,7 +166,7 @@ modsIO {
     project{
 		artifact = new File(jar.destinationDir, archivesBaseName+"-"+version+".jar")
 		modid = "1265"
-		minecraft = "1.11.2"
+		minecraft = "1.12"
 		try{changelog = file('changelog.txt').text}catch(Exception e){changelog=""}
 		tag = "beta"
 		current = true
