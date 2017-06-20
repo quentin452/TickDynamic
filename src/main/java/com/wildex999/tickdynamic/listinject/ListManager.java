@@ -244,8 +244,8 @@ public class ListManager<T extends EntityObject> implements List<T> {
 		}
 		EntityObject entityObject = (EntityObject) object;
 		if (entityObject.TD_entityGroup == null || entityObject.TD_entityGroup.list != this) {
-			//TickDynamicMod.logError("Contains check: " + object + " does not belong to list: " + this + " but instead " + (entityObject.TD_entityGroup == null ? "None" : entityObject.TD_entityGroup.list));
-			//Thread.dumpStack();
+			TickDynamicMod.logError("Contains check: " + object + " does not belong to list: " + this + " but instead " + (entityObject.TD_entityGroup == null ? "None" : entityObject.TD_entityGroup.list));
+			Thread.dumpStack();
 			return false;
 		}
 

@@ -1,1 +1,2 @@
-Reduced console spam from modded Tile Entities/Entities
+Minor fixes
+Crash fix

@@ -118,6 +118,6 @@ public class WorldEventHandler {
 	}
 
 	private void setCustomProfiler(World world, Profiler profiler) throws Exception {
-		ReflectionHelper.setPrivateValue(World.class, world, profiler, "profiler", "field_72984_F");
+		ReflectionHelper.setPrivateValue(World.class, world, profiler, "profiler", "field_71304_b");
 	}
 }
