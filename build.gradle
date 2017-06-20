@@ -11,7 +11,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
         classpath 'ModsIOUpload:ModsIOUpload:+'
     }
 }
@@ -38,7 +38,7 @@ def signJar(archivePath) {
     }
 }
 
-version = "0.5.7"
+version = "0.5.8"
 group= "com.wildex999.tickdynamic"
 archivesBaseName = "TickDynamic-1.12"
 
@@ -49,10 +49,10 @@ allprojects {
 
 
 minecraft {
-    version = "1.12-14.21.0.2327"
+    version = "1.12-14.21.0.2338"
     runDir = "run"
     replace '${version}', project.version
-    mappings = "snapshot_20170615"
+    mappings = "snapshot_20170619"
 	
 	clientRunArgs += "-uuid=0b1ec5ad-cb2a-43b7-995d-889320eb2e5b -username=The_Fireplace"
 }

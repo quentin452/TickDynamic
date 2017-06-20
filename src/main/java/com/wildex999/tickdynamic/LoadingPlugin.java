@@ -11,7 +11,6 @@ import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin.TransformerExclusions
 import java.util.Map;
 
 @SortingIndex(1009) //Run after deobfuscation, and try to run after most other coremods
-@MCVersion("1.11.2")
 @TransformerExclusions({"com.wildex999",})
 public class LoadingPlugin implements IFMLLoadingPlugin {
 
