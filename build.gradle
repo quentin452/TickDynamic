@@ -24,6 +24,20 @@ apply plugin: 'net.cazzar.gradle.modsio'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
+def signJar(archivePath) {
+    if (project.hasProperty("ksAlias") && project.hasProperty("ks") && project.hasProperty("ksPass")) {
+        ant.signjar(
+            jar:                  archivePath,
+            alias:                project.ksAlias,
+            keystore:             project.ks,
+            storepass:            project.ksPass,
+            preservelastmodified: true
+        )
+    } else {
+        println "WARNING!!!\tCannot sign jar!"
+    }
+}
+
 version = "0.5.7"
 group= "com.wildex999.tickdynamic"
 archivesBaseName = "TickDynamic-1.11.2"
@@ -60,15 +74,6 @@ processResources
     }
 }
 
-jar {
-    manifest {
-        attributes 'FMLCorePlugin': 'com.wildex999.tickdynamic.LoadingPlugin',
-                    'FMLCorePluginContainsFMLMod': 'true'
-    }
-    
-    exclude 'net/**'
-}
-
 task showVersion {
     description "Displays the current version"
     group "help"
@@ -87,10 +92,44 @@ task showVersion {
     outputs.upToDateWhen { false }
 }
 
-task deobfJar(type: Jar) {
-    from sourceSets.main.output
-    classifier = 'deobf'
-}
+jar {
+     manifest {
+             attributes 'FMLCorePlugin': 'com.wildex999.tickdynamic.LoadingPlugin',
+                         'FMLCorePluginContainsFMLMod': 'true'
+         }
+
+     doLast {
+         if (!gradle.taskGraph.hasTask(reobfJar)) {
+             signJar(jar)
+         }
+     }
+ }
+
+ reobfJar {
+     doLast {
+         signJar(jar)
+     }
+ }
+
+ task deobfJar(type: Jar) {
+     classifier = "deobf"
+     manifest {
+                 attributes 'FMLCorePlugin': 'com.wildex999.tickdynamic.LoadingPlugin',
+                             'FMLCorePluginContainsFMLMod': 'true'
+             }
+
+     doLast {
+         signJar(deobfJar.archivePath)
+     }
+ }
+
+ sourceJar {
+
+     doLast {
+         signJar(sourceJar.archivePath)
+     }
+ }
+
 
 artifacts {
     archives jar

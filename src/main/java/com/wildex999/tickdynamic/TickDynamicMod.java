@@ -18,20 +18,23 @@ import com.wildex999.tickdynamic.timemanager.TimeManager;
 import com.wildex999.tickdynamic.timemanager.TimedEntities;
 import com.wildex999.tickdynamic.timemanager.TimedGroup;
 
+import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.Style;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.*;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
+import net.minecraftforge.fml.common.event.*;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import org.apache.logging.log4j.Level;
 
 /**
@@ -42,7 +45,7 @@ import org.apache.logging.log4j.Level;
  * - Entities and TileEntities grouped by owner(Player), and limits can be set per player.
  */
 
-@Mod(modid = TickDynamicMod.MODID, name = TickDynamicMod.MODNAME, version = TickDynamicMod.VERSION, updateJSON = "https://bitbucket.org/The_Fireplace/minecraft-mod-updates/raw/master/tickdynamic.json")
+@Mod(modid = TickDynamicMod.MODID, name = TickDynamicMod.MODNAME, version = TickDynamicMod.VERSION, updateJSON = "https://bitbucket.org/The_Fireplace/minecraft-mod-updates/raw/master/tickdynamic.json", acceptableRemoteVersions = "*", certificateFingerprint = "a93cd984e835238a9296066aff9aee15a202ec51")
 public class TickDynamicMod {
 	public static final String MODID = "tickdynamic";
 	public static final String MODNAME = "Tick Dynamic";
@@ -52,6 +55,8 @@ public class TickDynamicMod {
 	@Mod.Instance(MODID)
 	public static TickDynamicMod instance;
 
+	public static boolean DEV_ENV = (Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
+	public static boolean VALID_JAR = true;
 
 	public Map<String, ITimed> timedObjects;
 	public Map<String, EntityGroup> entityGroups;
@@ -79,9 +84,15 @@ public class TickDynamicMod {
 	public int defaultAverageTicks = 20;
 
 	@Mod.EventHandler
+	public static final void onInvalidCertificate(FMLFingerprintViolationEvent event) {
+		if (!DEV_ENV) {
+			VALID_JAR = false;
+		}
+	}
+
+	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		tpsMutex = new Semaphore(1);
-		tpsTimer = new Timer();
 		tpsList = Lists.newLinkedList();
 		config = new Configuration(event.getSuggestedConfigurationFile());
 	}
@@ -91,10 +102,6 @@ public class TickDynamicMod {
 	public void loadConfig(boolean groups) {
 		//TODO: Separate Initial load, reload and write
 		TickDynamicConfig.loadConfig(this, groups);
-	}
-
-	public void writeConfig(boolean saveFile) {
-		//TODO
 	}
 
 	//Queue to save any changes done to the config
@@ -132,6 +139,7 @@ public class TickDynamicMod {
 	public void serverStart(FMLServerStartingEvent event) {
 		event.registerServerCommand(new CommandHandler());
 
+		tpsTimer = new Timer();
 		tpsTimer.schedule(new TimerTickTask(), 1000, 1000);
 
 		server = event.getServer();
@@ -193,6 +201,25 @@ public class TickDynamicMod {
 				config.save();
 			}
 		}
+	}
+
+	@SubscribeEvent
+	public void clientJoinWorld(FMLNetworkEvent.ClientConnectedToServerEvent event){
+		if(!VALID_JAR)
+			(new Thread(() -> {
+				while (FMLClientHandler.instance().getClientPlayerEntity() == null) {
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						logWarn(e.getMessage());
+					}
+				}
+
+				logDebug("Client with invalid jar is connecting: "
+						+ FMLClientHandler.instance().getClientPlayerEntity().getDisplayNameString());
+
+				FMLClientHandler.instance().getClientPlayerEntity().sendMessage(new TextComponentString("Warning: Your copy of "+MODNAME+" does not appear to be valid. Please click here and download a fresh copy. If you did download it from that link, please report this error on the issue tracker.").setStyle(new Style().setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://mods.curse.com/mc-mods/minecraft/269359-tick-dynamic#t1:other-downloads"))));
+			})).start();
 	}
 
 	/**

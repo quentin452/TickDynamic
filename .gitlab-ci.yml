@@ -33,7 +33,7 @@ deployMaven:
   stage: deploy
   script:
   - ./gradlew clean
-  - ./gradlew build uploadArchives curseforge uploadToModsIO -PcurseForgeApiKey=$curseForgeApiKey -PmodsioApiKey=$modsioApiKey --stacktrace --continue
+  - ./gradlew build uploadArchives curseforge uploadToModsIO -PksAlias=$ksAlias -Pks=$ks -PksPass=$ksPass -PcurseForgeApiKey=$curseForgeApiKey -PmodsioApiKey=$modsioApiKey --stacktrace --continue
   - cp $ORIG_ARTIFACTS .
   when: manual
   artifacts:

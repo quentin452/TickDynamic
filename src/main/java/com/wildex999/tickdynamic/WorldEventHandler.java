@@ -63,13 +63,15 @@ public class WorldEventHandler {
 
 		//Overwrite existing lists, copying any loaded Entities
 		TickDynamicMod.logDebug("Adding " + event.getWorld().loadedEntityList.size() + " existing Entities.");
-		List<? extends EntityObject> oldList = event.getWorld().loadedEntityList;
+		List entities = event.getWorld().loadedEntityList;
+		List<? extends EntityObject> oldList = entities;
 		ReflectionHelper.setPrivateValue(World.class, event.getWorld(), entityManager, "loadedEntityList", "field_72996_f");
 		entityManager.addAll(oldList);
 
 		//Tiles
 		TickDynamicMod.logDebug("Adding " + event.getWorld().tickableTileEntities.size() + " existing TileEntities.");
-		oldList = event.getWorld().tickableTileEntities;
+		List tiles = event.getWorld().tickableTileEntities;
+		oldList = tiles;
 		ReflectionHelper.setPrivateValue(World.class, event.getWorld(), tileEntityManager, "tickableTileEntities", "field_175730_i");
 		tileEntityManager.addAll(oldList);
 
@@ -118,6 +120,6 @@ public class WorldEventHandler {
 	}
 
 	private void setCustomProfiler(World world, Profiler profiler) throws Exception {
-		ReflectionHelper.setPrivateValue(World.class, world, profiler, "profiler", "field_71304_b");
+		ReflectionHelper.setPrivateValue(World.class, world, profiler, "profiler", "field_72984_F");
 	}
 }
