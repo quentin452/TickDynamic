@@ -3,6 +3,8 @@ package com.wildex999.tickdynamic.listinject;
 import com.wildex999.tickdynamic.TickDynamicConfig;
 import com.wildex999.tickdynamic.TickDynamicMod;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ITickable;
 import net.minecraft.world.World;
 import net.minecraftforge.common.config.ConfigCategory;
 import org.apache.commons.lang3.NotImplementedException;
@@ -131,6 +133,8 @@ public class ListManager<T extends EntityObject> implements List<T> {
 	public void reloadGroups() {
 		//TODO: Do partial updates each tick to not stop the world, I.e 1% of groups per tick?
 
+		TickDynamicMod.logDebug("Reloading Groups!");
+
 		//Reload config, marking for removal those who no longer exists
 		TickDynamicConfig.loadGroups("worlds.dim" + world.provider.getDimension());
 
@@ -163,8 +167,10 @@ public class ListManager<T extends EntityObject> implements List<T> {
 
 	//Assign the given EntityObject to an appropriate group
 	public void assignToGroup(EntityObject object) {
-		if (object == null)
+		if (object == null) {
+			TickDynamicMod.logError("Error: Could not assign null object to group!");
 			return;
+		}
 
 		EntityGroup group = object.TD_entityGroup;
 		if (group != null)
@@ -195,6 +201,9 @@ public class ListManager<T extends EntityObject> implements List<T> {
 	public boolean add(EntityObject element) {
 		if (element.TD_entityGroup != null)
 			return false;
+		if (element.TD_selfTileEntity != null)
+			if(!(element.TD_selfTileEntity instanceof ITickable))
+				return false;//Don't add non-tickable tile entities
 
 		//TODO: Queue and add over time
 		//ungroupedEntities.addEntity(element);
@@ -353,7 +362,7 @@ public class ListManager<T extends EntityObject> implements List<T> {
 	@Override
 	public boolean remove(Object object) {
 		if (!contains(object)) {
-			TickDynamicMod.logWarn("Failed to remove: " + object + " as it does not exist in list: " + this);
+			//TickDynamicMod.logWarn("Failed to remove: " + object + " as it does not exist in the list.");
 			return false;
 		}
 

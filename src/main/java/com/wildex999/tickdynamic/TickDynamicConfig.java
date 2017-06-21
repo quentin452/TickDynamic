@@ -24,7 +24,8 @@ public class TickDynamicConfig {
 
 		//--GENERAL CONFIG--
 		mod.config.getCategory("general");
-		mod.config.setCategoryComment("general", "WEBSITE: http://mods.stjerncraft.com/tickdynamic   <- Head here for the documentation, if you have problems or if you have questions."
+		mod.config.setCategoryComment("general", "WEBSITE: https://mods.curse.com/mc-mods/minecraft/269359-tick-dynamic   <- Head here for the documentation, or if you have questions."
+				+ "\nISSUE TRACKER: https://github.com/The-Fireplace/TickDynamic/issues   <- Go here if you have problems, log spam, or suggestions to improve the mod."
 				+ "\n\n"
 				+ "Slices are the way you control the time allotment to each world, and within each world, to Entities and TileEntities.\n"
 				+ "Each tick the time for a tick(By default 50ms) will be distributed among all the worlds, according to how many slices they have.\n"

@@ -1,1 +1,1 @@
-Added the ablity to disable all logs
+Fixed the log spam caused by non-tickable modded tile entities.

@@ -4,10 +4,10 @@
   "name": "Tick Dynamic",
   "description": "Dynamic control of the world tickrate to reduce apparent lag.",
   "version": "${version}",
-  "mcversion": "1.11.2",
+  "mcversion": "1.12",
   "url": "https://mods.curse.com/mc-mods/minecraft/269359-tick-dynamic",
   "updateUrl": "https://mods.curse.com/mc-mods/minecraft/269359-tick-dynamic",
-  "authorList": ["The_Fireplace","Wildex999 ( wildex999@gmail.com )"],
+  "authorList": ["The_Fireplace","Wildex999"],
   "logoFile": "",
   "screenshots": [],
   "dependencies": []
