@@ -4,7 +4,6 @@ import com.wildex999.patcher.EntityInjector;
 import com.wildex999.patcher.TransformerPatcher;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
-import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin.MCVersion;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin.SortingIndex;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin.TransformerExclusions;
 
@@ -12,6 +11,7 @@ import java.util.Map;
 
 @SortingIndex(1009) //Run after deobfuscation, and try to run after most other coremods
 @TransformerExclusions({"com.wildex999",})
+@IFMLLoadingPlugin.MCVersion("1.12.2")
 public class LoadingPlugin implements IFMLLoadingPlugin {
 
 	@Override

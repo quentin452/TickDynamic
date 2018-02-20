@@ -1,1 +1,1 @@
-Fixed the log spam caused by non-tickable modded tile entities.
+Updated to 1.12.2

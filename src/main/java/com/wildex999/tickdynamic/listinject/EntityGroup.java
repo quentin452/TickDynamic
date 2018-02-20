@@ -14,16 +14,14 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.RegistryNamespaced;
 import net.minecraft.world.World;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.FMLContainer;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
-import net.minecraftforge.fml.common.registry.FMLControlledNamespacedRegistry;
-import net.minecraftforge.fml.common.registry.GameData;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
-import org.apache.commons.lang3.ArrayUtils;
+import net.minecraftforge.registries.ForgeRegistry;
+import net.minecraftforge.registries.GameData;
+import net.minecraftforge.registries.IForgeRegistry;
 
 import java.util.*;
 
@@ -300,8 +298,8 @@ public class EntityGroup {
 
 	//A single name block might have multiple TileEntities(For the different metadata)
 	private List<Class> loadTilesByName(String name) {
-		FMLControlledNamespacedRegistry<Block> blockRegistry = GameData.getBlockRegistry();
-		Block block = blockRegistry.getObject(new ResourceLocation(name));
+		IForgeRegistry<Block> blockRegistry = GameRegistry.findRegistry(Block.class);
+		Block block = blockRegistry.getValue(new ResourceLocation(name));
 		if (block == Blocks.AIR)
 			return null;
 
@@ -320,13 +318,12 @@ public class EntityGroup {
 					currentTile = null;
 				}
 
-				Class cls = currentTile.getClass();
-				if (currentTile != null && cls != prevTile) {
-
-					if (!tileClassList.contains(cls))
+				if(currentTile != null) {
+					Class cls = currentTile.getClass();
+					if (cls != prevTile && !tileClassList.contains(cls))
 						tileClassList.add(currentTile.getClass());
+					prevTile = cls;
 				}
-				prevTile = cls;
 			}
 		}
 
