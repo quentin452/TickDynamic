@@ -1,6 +1,5 @@
 package com.wildex999.tickdynamic.commands;
 
-import com.wildex999.tickdynamic.TickDynamicMod;
 import com.wildex999.tickdynamic.listinject.EntityGroup;
 import com.wildex999.tickdynamic.listinject.ListManager;
 import com.wildex999.tickdynamic.timemanager.TimeManager;
@@ -16,7 +15,9 @@ import net.minecraftforge.common.DimensionManager;
 import org.apache.commons.lang3.StringUtils;
 
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class CommandWorld implements ICommand {
 	private int borderWidth;

@@ -2,18 +2,21 @@ package com.wildex999.patcher;
 
 import com.wildex999.tickdynamic.TickDynamicMod;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /*
  * Written by: Wildex999 ( wildex999@gmail.com )
- * 
+ *
  * Parser for custom patching for Minecraft coremods
  * The goal of this patching is to be able to insert, replace or remove bytecode between two known points.
  * These points are defined as a set of instructions.
  * Points should allow for unknown/dynamic Label and LocalVariable numbers, and even to store and re-use these numbers in the patched code.
- * 
+ *
  * Instruction:
  * @ = Command
  * * = Anything. For example: 'LDC 1*2'  can be 'LDC 132', 'LDC 1432', 'LDC 1test2' (Note: Does not match length 0)
@@ -24,7 +27,7 @@ import java.util.regex.Pattern;
  * ?varname] = Anything, then stored to varname. For example: 'L?label1]' can be 'L143', which will then put '143' into label1
  * Note: A variable can only be set once during a Start/End!
  * =varname] = Whatever is stored in the varname. For example: 'L=label1]' will become to 'L143', but note that label1 must be set earlier in the patch.
- * {varname]RegEx} = An regular expression, with the result saved to varname. 
+ * {varname]RegEx} = An regular expression, with the result saved to varname.
  * Note: You have to escape any '}' in the regular expression using '%'.
  * Note2: Each saved variable from @S to @E will be stored in a named group(varname) and can be accessed using the RegEx.
  * Note3: A variable can only be set once during a Start/End!
@@ -32,53 +35,53 @@ import java.util.regex.Pattern;
  * Note: A variable is set by using a named group, like: (?<varname>expr)
  * " = Ignore everything until next newline, essentially a comment. Note: Comments inside a command are ignored
  * ! = Ignore everything until next occurrence of !, multi-line comment Note: Comments inside a command are ignored
- * 
+ *
  * % = Ignore next instruction/command (%@ = @, %% = % etc.)
- * 
+ *
  * varname can only be the characters[a-z][A-z][0-9], and can not begin with a number!
- * 
+ *
  * Commands:
  * Note: All commands end once a new one start, for example: '@SThis is @-the@+a@E test.'
- * 
+ *
  * @| = End of previous command. Use this when you can't end the command by starting another, for example for formating:
  * '@SThis is @|
  * Note: MUST be used at the end to indicate end of stream, or else the last command is ignored!
- * 
+ *
  * @-the@|
  * @+a@|
- * 
+ *
  * @E test.'
- * 
+ *
  * @O = Origin point, everything after this, will look behind the point defined here.
  * For example, '@Opublic getBiomeGenForCoordsBody(II)Lnet/minecraft/world/biome/BiomeGenBase;@|' will make every subsequent
  * operation start checking after the first occurrence of this origin. This will allow the patching to speed up a lot
  * when the origin point is well chosen.
- * 
+ *
  * @L = Limit point, set the point which can not be searched past. Use with @O to set an area for @S and @E to work within.
  * The limit applies to every command after this command. The limit can be overwritten.
- * Example: 
+ * Example:
  * '@Opublic getBiomeGenForCoordsBody(II)Lnet/minecraft/world/biome/BiomeGenBase;@|
  * @LLOCALVARIABLE this Lnet/minecraft/world/World; L0 L1 0@|'
  * Will make every subsequent command work within those two known points.
  * Note: will use the first occurrence found after the set origin point!
- * 
+ *
  * @R = Reset origin
  * @U = Remove limit
  * Note: These are both empty commands, and doesn't have any data
- * 
+ *
  * TODO: @N = Next point, set the origin equal to the end of the previous @E. This allows for a 'walking' patch without having to worry about absolutely unique @S and @E.
- * 
+ *
  * @S = Start point, defines the start point of every addition and/or subtraction
- * 
+ *
  * @E = End point, defines the end point of every addition and/or subtraction
- * 
+ *
  * @- = Subtraction, everything defined here will be removed from between the start point and end point.
  * This must define exactly what is between @S and @E, or else it will not be detected as the correct chunk.
  * For example: 'One Two Three'   '@SOne@- Two @E Three' will become 'One Three'.
- * 
+ *
  * @+ = Addition, everything defined here will be added between the start point and end point
  * For example: 'One Three'  '@SOne@+ Two@E Three' will become 'One Two Three'.
- * 
+ *
  * Note: You can use @+ or @- alone, however when used together the subtraction will always run first.
  * However, if you have multiple additions of subtractions, they will run in order
  * For Example: 'This is an test for you!'
@@ -265,14 +268,20 @@ public class PatchParser {
 						token.replacementTokens.add(new ReplacementToken(TokenType.Text, str.substring(startIndex, i)));
 						index = str.indexOf("]", i);
 						//Add new token with the contained value for length
-						if (currentChar == '<')
-							type = TokenType.AnythingLess;
-						else if (currentChar == '>')
-							type = TokenType.AnythingMore;
-						else if (currentChar == '#')
-							type = TokenType.AnythingExact;
-						else
-							type = TokenType.TouchVar;
+						switch (currentChar) {
+							case '<':
+								type = TokenType.AnythingLess;
+								break;
+							case '>':
+								type = TokenType.AnythingMore;
+								break;
+							case '#':
+								type = TokenType.AnythingExact;
+								break;
+							default:
+								type = TokenType.TouchVar;
+								break;
+						}
 						token.replacementTokens.add(new ReplacementToken(type, Integer.parseInt(str.substring(i + 1, index))));
 						startIndex = index + 1;
 						i = index;
@@ -457,14 +466,18 @@ public class PatchParser {
 
 				for (ReplacementToken repToken : token.replacementTokens) {
 					String in;
-					if (repToken.type == TokenType.Text)
-						in = (String) repToken.var;
-					else if (repToken.type == TokenType.AnythingGet) {
-						in = variableMap.get((String) repToken.var);
-						if (in == null)
-							throw new Exception("Tried to use nonexistent variable '" + (String) repToken.var + "' during Add command.");
-					} else
-						throw new Exception("Unsuported action during CommandAdd: " + repToken.type);
+					switch (repToken.type) {
+						case Text:
+							in = (String) repToken.var;
+							break;
+						case AnythingGet:
+							in = variableMap.get((String) repToken.var);
+							if (in == null)
+								throw new Exception("Tried to use nonexistent variable '" + (String) repToken.var + "' during Add command.");
+							break;
+						default:
+							throw new Exception("Unsuported action during CommandAdd: " + repToken.type);
+					}
 
 					output.insert(offset, in);
 					baseLimit += in.length();
@@ -481,37 +494,49 @@ public class PatchParser {
 		for (int repToken = 0; repToken < token.replacementTokens.size(); repToken++) {
 			ReplacementToken action = token.replacementTokens.get(repToken);
 
-			if (action.type == TokenType.Text)
-				detectionRegEx.append(Pattern.quote((String) action.var));
-			else if (action.type == TokenType.Anything)
-				detectionRegEx.append(".+"); //We use DOTALL so it includes newline
-			else if (action.type == TokenType.AnythingLine)
-				detectionRegEx.append("[^<>\\r\\n]+"); //Pretty much the .+ without DOTALL
-			else if (action.type == TokenType.AnythingExact)
-				detectionRegEx.append(".{").append(action.var).append("}");
-			else if (action.type == TokenType.AnythingLess)
-				detectionRegEx.append(".{0,").append(((Integer) action.var) + 1).append("}");
-			else if (action.type == TokenType.AnythingMore)
-				detectionRegEx.append(".{").append(action.var).append(",}");
-			else if (action.type == TokenType.AnythingSet) {
-				if (varSet.get((String) action.var) != null)
-					throw new Exception("(Token:" + token.type + ") Trying to set a variable(" + action.var + ") that has already been set!");
-				detectionRegEx.append("(?<").append(action.var).append(">[^<>\\r\\n]+)");
-				varSet.put((String) action.var, true);
-			} else if (action.type == TokenType.AnythingGet) {
-				if (varSet.get((String) action.var) == null) {
-					if (variableMap.get((String) action.var) == null)
-						throw new Exception("(Token:" + token.type + ") Trying to get a variable(" + action.var + ") which has not yet been set!");
-					//Been set during a previous Start/End, so we set it now
-					detectionRegEx.append("(?<").append(action.var).append(">").append(variableMap.get((String) action.var)).append(")");
+			switch (action.type) {
+				case Text:
+					detectionRegEx.append(Pattern.quote((String) action.var));
+					break;
+				case Anything:
+					detectionRegEx.append(".+"); //We use DOTALL so it includes newline
+					break;
+				case AnythingLine:
+					detectionRegEx.append("[^<>\\r\\n]+"); //Pretty much the .+ without DOTALL
+					break;
+				case AnythingExact:
+					detectionRegEx.append(".{").append(action.var).append("}");
+					break;
+				case AnythingLess:
+					detectionRegEx.append(".{0,").append(((Integer) action.var) + 1).append("}");
+					break;
+				case AnythingMore:
+					detectionRegEx.append(".{").append(action.var).append(",}");
+					break;
+				case AnythingSet:
+					if (varSet.get((String) action.var) != null)
+						throw new Exception("(Token:" + token.type + ") Trying to set a variable(" + action.var + ") that has already been set!");
+					detectionRegEx.append("(?<").append(action.var).append(">[^<>\\r\\n]+)");
 					varSet.put((String) action.var, true);
-				} else //Been set during this Start/End, so we just reference it
-					detectionRegEx.append("\\k<").append(action.var).append(">");
-			} else if (action.type == TokenType.RegEx) {
-				detectionRegEx.append("(?<").append(((String[]) action.var)[0]).append(">").append(((String[]) action.var)[1]).append(")");
-				varSet.put(((String[]) action.var)[0], true);
-			} else if (action.type == TokenType.TouchVar)
-				varSet.put((String) action.var, true);
+					break;
+				case AnythingGet:
+					if (varSet.get((String) action.var) == null) {
+						if (variableMap.get((String) action.var) == null)
+							throw new Exception("(Token:" + token.type + ") Trying to get a variable(" + action.var + ") which has not yet been set!");
+						//Been set during a previous Start/End, so we set it now
+						detectionRegEx.append("(?<").append(action.var).append(">").append(variableMap.get((String) action.var)).append(")");
+						varSet.put((String) action.var, true);
+					} else //Been set during this Start/End, so we just reference it
+						detectionRegEx.append("\\k<").append(action.var).append(">");
+					break;
+				case RegEx:
+					detectionRegEx.append("(?<").append(((String[]) action.var)[0]).append(">").append(((String[]) action.var)[1]).append(")");
+					varSet.put(((String[]) action.var)[0], true);
+					break;
+				case TouchVar:
+					varSet.put((String) action.var, true);
+					break;
+			}
 
 		}
 	}

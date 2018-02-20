@@ -7,7 +7,7 @@ import net.minecraft.profiler.Profiler;
  * when using a for loop for iterating.
  * This will allow us to be 100% accurate while the world is iterating, as we would know
  * whether we are ticking, or looping the list from inside a ticking entity.
- * 
+ *
  * This does however add a bit of an overhead with the function calls and String compare.
  */
 

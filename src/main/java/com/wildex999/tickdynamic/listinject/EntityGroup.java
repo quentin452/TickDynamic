@@ -19,8 +19,6 @@ import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
-import net.minecraftforge.registries.ForgeRegistry;
-import net.minecraftforge.registries.GameData;
 import net.minecraftforge.registries.IForgeRegistry;
 
 import java.util.*;
@@ -59,10 +57,10 @@ public class EntityGroup {
 
 	static {
 		try {
-			RegistryNamespaced<ResourceLocation, Class <? extends TileEntity>> registry = ReflectionHelper.getPrivateValue(TileEntity.class, null, "REGISTRY", "field_190562_f");
-			for(ResourceLocation entry:registry.getKeys())
+			RegistryNamespaced<ResourceLocation, Class<? extends TileEntity>> registry = ReflectionHelper.getPrivateValue(TileEntity.class, null, "REGISTRY", "field_190562_f");
+			for (ResourceLocation entry : registry.getKeys())
 				tileResourceToClassMap.put(entry, registry.getObject(entry));
-		} catch(Exception e) {
+		} catch (Exception e) {
 			TickDynamicMod.logError(e.toString());
 			TickDynamicMod.logError("Unable to load TileEntities from Mods, class variable(REGISTRY) lookup failed. The code might be obfuscated!");
 		}
@@ -151,14 +149,13 @@ public class EntityGroup {
 		gotOwnEntries = true;
 
 		ArrayList<String> mods = Lists.newArrayList();
-		for(ModContainer mod:Loader.instance().getActiveModList())
+		for (ModContainer mod : Loader.instance().getActiveModList())
 			mods.add(mod.getModId());
 		String[] excludemods = {""};
 		comment = "List of mods to exclude. Will exclude every Entity or TileEntity from the specific mod, independent of 'entityClassNames' and 'entityNames'\n";
-		if(base != null && !TickDynamicMod.instance.config.hasKey(configEntry, config_modId))
+		if (base != null && !TickDynamicMod.instance.config.hasKey(configEntry, config_modId))
 			excludemods = TickDynamicMod.instance.config.get(base.configEntry, config_modId, excludemods, comment).getStringList();
-		else
-		{
+		else {
 			gotOwnEntries = true;
 			excludemods = TickDynamicMod.instance.config.get(configEntry, config_modId, excludemods, comment).getStringList();
 		}
@@ -318,7 +315,7 @@ public class EntityGroup {
 					currentTile = null;
 				}
 
-				if(currentTile != null) {
+				if (currentTile != null) {
 					Class cls = currentTile.getClass();
 					if (cls != prevTile && !tileClassList.contains(cls))
 						tileClassList.add(currentTile.getClass());
@@ -385,79 +382,74 @@ public class EntityGroup {
 	}
 
 	private void loadTilesByModNames(ArrayList<String> names) {
-		if(names.isEmpty())
+		if (names.isEmpty())
 			return;
-		if(names.size() == 1 && names.get(0).length() == 0)
+		if (names.size() == 1 && names.get(0).length() == 0)
 			return;
 
-		for(String name : names) {
+		for (String name : names) {
 			List<Class> classList = loadTilesByModName(name);
-			if(classList != null)
+			if (classList != null)
 				entityEntries.addAll(classList);
 		}
 	}
 
 	private void loadEntitiesByModNames(ArrayList<String> names) {
-		if(names.isEmpty())
+		if (names.isEmpty())
 			return;
-		if(names.size() == 1 && names.get(0).length() == 0)
+		if (names.size() == 1 && names.get(0).length() == 0)
 			return;
 
-		for(String name : names)
-		{
+		for (String name : names) {
 			List<Class> classList = loadEntitiesByModName(name);
 			entityEntries.addAll(classList);
 		}
 	}
 
 	private List<Class> loadTilesByModName(String name) {
-		TickDynamicMod.logTrace("Attempting to load tiles for "+name);
-		if(tileResourceToClassMap == null)
+		TickDynamicMod.logTrace("Attempting to load tiles for " + name);
+		if (tileResourceToClassMap == null)
 			return null;
 		return loadClassesFromResourceLocation(tileResourceToClassMap, name);
 	}
 
 	private List<Class> loadEntitiesByModName(String name) {
-		TickDynamicMod.logTrace("Attempting to load entities for "+name);
+		TickDynamicMod.logTrace("Attempting to load entities for " + name);
 		return loadClassesFromRegistryData(ReflectionHelper.getPrivateValue(EntityRegistry.class, EntityRegistry.instance(), "entityClassRegistrations"), name);
 	}
 
 	private List<Class> loadClassesFromRegistryData(Map<Class<? extends Entity>, EntityRegistry.EntityRegistration> classToRegistrationMap, String name) {
-		List<Class> classList = new ArrayList<Class>();
+		List<Class> classList = new ArrayList<>();
 
 		Set<?> entries = classToRegistrationMap.entrySet();
 		Iterator<Map.Entry<Class<? extends Entity>, EntityRegistry.EntityRegistration>> it = (Iterator<Map.Entry<Class<? extends Entity>, EntityRegistry.EntityRegistration>>) entries.iterator();
-		while(it.hasNext())
-		{
+		while (it.hasNext()) {
 			Map.Entry<Class<? extends Entity>, EntityRegistry.EntityRegistration> entry = it.next();
-			if(entry.getValue().getRegistryName().getResourceDomain().equalsIgnoreCase(name))
-			{
+			if (entry.getValue().getRegistryName().getResourceDomain().equalsIgnoreCase(name)) {
 				Class value = entry.getKey();
 				classList.add(value);
 			}
 		}
-		if(!classList.isEmpty())
+		if (!classList.isEmpty())
 			TickDynamicMod.logTrace(classList.toString());
 
 		return classList;
 	}
 
 	private List<Class> loadClassesFromResourceLocation(Map<ResourceLocation, Class> classToRegistrationMap, String name) {
-		List<Class> classList = new ArrayList<Class>();
+		List<Class> classList = new ArrayList<>();
 
 		Set<?> entries = classToRegistrationMap.entrySet();
 		Iterator<Map.Entry<ResourceLocation, Class>> it = (Iterator<Map.Entry<ResourceLocation, Class>>) entries.iterator();
-		while(it.hasNext())
-		{
+		while (it.hasNext()) {
 			Map.Entry<ResourceLocation, Class> entry = it.next();
-			if(entry.getKey().getResourceDomain().equalsIgnoreCase(name))
-			{
+			if (entry.getKey().getResourceDomain().equalsIgnoreCase(name)) {
 				Class value = entry.getValue();
 				classList.add(value);
 			}
 		}
 
-		if(!classList.isEmpty())
+		if (!classList.isEmpty())
 			TickDynamicMod.logTrace(classList.toString());
 
 		return classList;

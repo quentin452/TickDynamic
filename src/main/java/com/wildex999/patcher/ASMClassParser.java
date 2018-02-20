@@ -495,57 +495,64 @@ public class ASMClassParser {
 			offset = index + 1;
 
 			char tokenChar = token.charAt(offset);
-			if (tokenChar == '"') //String value
-			{
-				index = token.indexOf('"', offset + 1);
-				value = token.substring(offset + 1, index);
+			switch (tokenChar) {
+				case '"':
+//String value
 
-				anno.visit(valueName, value);
-				//System.out.println("AnnotationStr: " + valueName + "=" + value);
+					index = token.indexOf('"', offset + 1);
+					value = token.substring(offset + 1, index);
 
-				offset = index + 1;
-			} else if (tokenChar == '{') //Array value
-				throw new Exception(getCurrentTokenLine() + ": Parser currently does not handle arrays in annotations!");
-			else if (tokenChar == 'L') //Enum or Object Type
-			{
-				//Start with getting the Type name
-				index = token.indexOf(";", offset);
-				value = token.substring(offset, index + 1);
-				offset = index + 1;
+					anno.visit(valueName, value);
+					//System.out.println("AnnotationStr: " + valueName + "=" + value);
 
-				//If we have a '.' after that, it's an Enum
-				if (token.charAt(offset) == '.') {
-					//Find length
-					int index1 = token.indexOf(",", offset);
-					int index2 = token.indexOf(")", offset);
+					offset = index + 1;
+					break;
+				case '{':
+//Array value
+					throw new Exception(getCurrentTokenLine() + ": Parser currently does not handle arrays in annotations!");
+				case 'L':
+//Enum or Object Type
 
-					if (index1 < index2 && index1 != -1)
-						index = index1;
+					//Start with getting the Type name
+					index = token.indexOf(";", offset);
+					value = token.substring(offset, index + 1);
+					offset = index + 1;
+
+					//If we have a '.' after that, it's an Enum
+					if (token.charAt(offset) == '.') {
+						//Find length
+						int index1 = token.indexOf(",", offset);
+						int index2 = token.indexOf(")", offset);
+
+						if (index1 < index2 && index1 != -1)
+							index = index1;
+						else
+							index = index2;
+
+						String entryName = token.substring(offset + 1, index);
+						anno.visitEnum(valueName, value, entryName);
+						//System.out.println("AnnotationEnum: " + valueName + "=" + value + "." + entryName);
+
+						offset = index;
+					} else {
+						anno.visit(valueName, Type.getType(value));
+						//System.out.println("AnnotationObj: " + valueName + "=" + value);
+					}
+
+					break;
+				default:
+					//Check for Boolean and Number values
+					index = token.indexOf(",", offset);
+					if (index == -1)
+						value = token.substring(offset, token.length() - 1);
 					else
-						index = index2;
+						value = token.substring(offset, index);
 
-					String entryName = token.substring(offset + 1, index);
-					anno.visitEnum(valueName, value, entryName);
-					//System.out.println("AnnotationEnum: " + valueName + "=" + value + "." + entryName);
-
+					ValueType parsedValue = parseValue(value);
+					anno.visit(valueName, parsedValue.value);
+					//System.out.println("AnnotationBoolNr: " + valueName + "=" + parsedValue.value);
 					offset = index;
-				} else {
-					anno.visit(valueName, org.objectweb.asm.Type.getType(value));
-					//System.out.println("AnnotationObj: " + valueName + "=" + value);
-				}
-
-			} else {
-				//Check for Boolean and Number values
-				index = token.indexOf(",", offset);
-				if (index == -1)
-					value = token.substring(offset, token.length() - 1);
-				else
-					value = token.substring(offset, index);
-
-				ValueType parsedValue = parseValue(value);
-				anno.visit(valueName, parsedValue.value);
-				//System.out.println("AnnotationBoolNr: " + valueName + "=" + parsedValue.value);
-				offset = index;
+					break;
 			}
 
 			tokenChar = token.charAt(offset);
@@ -926,22 +933,28 @@ public class ASMClassParser {
 			Object[] stackTypes = null;
 			int localCount = 0;
 			int stackCount = 0;
-			if (type == Opcodes.F_NEW || type == Opcodes.F_FULL) {
-				//Parse local types
-				localTypes = parseFrameElements(labels);
-				localCount = localTypes.length;
+			switch (type) {
+				case Opcodes.F_NEW:
+				case Opcodes.F_FULL:
+					//Parse local types
+					localTypes = parseFrameElements(labels);
+					localCount = localTypes.length;
 
-				//Parse stack types
-				stackTypes = parseFrameElements(labels);
-				stackCount = stackTypes.length;
-			} else if (type == Opcodes.F_SAME1) {
-				stackTypes = new Object[]{nextToken()};
-				stackCount = 1;
-			} else if (type == Opcodes.F_APPEND) {
-				localTypes = parseFrameElements(labels);
-				localCount = localTypes.length;
-			} else if (type == Opcodes.F_CHOP) {
-				localCount = Integer.parseInt(nextToken());
+					//Parse stack types
+					stackTypes = parseFrameElements(labels);
+					stackCount = stackTypes.length;
+					break;
+				case Opcodes.F_SAME1:
+					stackTypes = new Object[]{nextToken()};
+					stackCount = 1;
+					break;
+				case Opcodes.F_APPEND:
+					localTypes = parseFrameElements(labels);
+					localCount = localTypes.length;
+					break;
+				case Opcodes.F_CHOP:
+					localCount = Integer.parseInt(nextToken());
+					break;
 			}
 
 			method.visitFrame(type, localCount, localTypes, stackCount, stackTypes);

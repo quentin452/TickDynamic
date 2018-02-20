@@ -9,6 +9,7 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.util.TraceClassVisitor;
 
 import java.io.*;
+import java.nio.charset.Charset;
 
 //Default Transformer that will apply any patches found in the "patches" directory of the jar
 
@@ -45,7 +46,7 @@ public class TransformerPatcher implements IClassTransformer {
 				baseData = stringWriter.toString();
 
 				//Patch
-				String patch = IOUtils.toString(input);
+				String patch = IOUtils.toString(input, Charset.defaultCharset());
 				PatchParser patchParser = new PatchParser();
 				patchParser.parsePatch(patch);
 				patchedData = patchParser.patch(baseData);

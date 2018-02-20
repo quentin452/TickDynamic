@@ -1,6 +1,5 @@
 package com.wildex999.tickdynamic.listinject;
 
-import com.wildex999.tickdynamic.TickDynamicMod;
 import net.minecraft.world.World;
 
 import java.util.Iterator;

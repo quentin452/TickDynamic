@@ -1,13 +1,5 @@
 package com.wildex999.tickdynamic;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.concurrent.Semaphore;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.wildex999.tickdynamic.commands.CommandHandler;
@@ -17,7 +9,6 @@ import com.wildex999.tickdynamic.timemanager.ITimed;
 import com.wildex999.tickdynamic.timemanager.TimeManager;
 import com.wildex999.tickdynamic.timemanager.TimedEntities;
 import com.wildex999.tickdynamic.timemanager.TimedGroup;
-
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.Style;
@@ -28,7 +19,8 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.common.*;
+import net.minecraftforge.fml.common.FMLLog;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.*;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -36,6 +28,10 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.Semaphore;
 
 /**
  * @author Wildex999 ( wildex999@gmail.com )
@@ -55,6 +51,8 @@ public class TickDynamicMod {
 	public static boolean debugTimer = false;
 	@Mod.Instance(MODID)
 	public static TickDynamicMod instance;
+
+	private static Logger LOGGER = FMLLog.getLogger();//initialize to FMLLog.getLogger in case it gets called before preinit.
 
 	public static boolean DEV_ENV = (Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
 	public static boolean VALID_JAR = true;
@@ -86,13 +84,13 @@ public class TickDynamicMod {
 
 	@Mod.EventHandler
 	public static final void onInvalidCertificate(FMLFingerprintViolationEvent event) {
-		if (!DEV_ENV) {
+		if (!DEV_ENV)
 			VALID_JAR = false;
-		}
 	}
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
+		LOGGER = event.getModLog();
 		tpsMutex = new Semaphore(1);
 		tpsList = Lists.newLinkedList();
 		config = new Configuration(event.getSuggestedConfigurationFile());
@@ -205,8 +203,8 @@ public class TickDynamicMod {
 	}
 
 	@SubscribeEvent
-	public void clientJoinWorld(FMLNetworkEvent.ClientConnectedToServerEvent event){
-		if(!VALID_JAR)
+	public void clientJoinWorld(FMLNetworkEvent.ClientConnectedToServerEvent event) {
+		if (!VALID_JAR)
 			(new Thread(() -> {
 				while (FMLClientHandler.instance().getClientPlayerEntity() == null) {
 					try {
@@ -219,7 +217,7 @@ public class TickDynamicMod {
 				logDebug("Client with invalid jar is connecting: "
 						+ FMLClientHandler.instance().getClientPlayerEntity().getDisplayNameString());
 
-				FMLClientHandler.instance().getClientPlayerEntity().sendMessage(new TextComponentString("Warning: Your copy of "+MODNAME+" does not appear to be valid. Please click here and download a fresh copy. If you did download it from that link, please report this error on the issue tracker.").setStyle(new Style().setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://mods.curse.com/mc-mods/minecraft/269359-tick-dynamic#t1:other-downloads"))));
+				FMLClientHandler.instance().getClientPlayerEntity().sendMessage(new TextComponentString("Warning: Your copy of " + MODNAME + " does not appear to be valid. Please click here and download a fresh copy. If you did download it from that link, please report this error on the issue tracker.").setStyle(new Style().setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://mods.curse.com/mc-mods/minecraft/269359-tick-dynamic#t1:other-downloads"))));
 			})).start();
 	}
 
@@ -247,8 +245,8 @@ public class TickDynamicMod {
 
 	/**
 	 * Get the named TimedGroup.
-	 * @return
-	 * Null if not loaded
+	 *
+	 * @return Null if not loaded
 	 */
 	public TimedGroup getTimedGroup(String name) {
 		return (TimedGroup) timedObjects.get(name);
@@ -256,8 +254,8 @@ public class TickDynamicMod {
 
 	/**
 	 * Get a named EntityGroup which possibly does not belong to a world
-	 * @return
-	 * Null if doesn't exist in config
+	 *
+	 * @return Null if doesn't exist in config
 	 */
 	public EntityGroup getEntityGroup(String name) {
 		//All Global Groups are loaded during config load/reload
@@ -304,10 +302,11 @@ public class TickDynamicMod {
 
 	/**
 	 * Get the named TimedGroup from the given world.
+	 *
 	 * @param canCreate
-	 * Whether to create if it does not exist
+	 * 		Whether to create if it does not exist
 	 * @param hasConfig
-	 * Whether to create with config entry
+	 * 		Whether to create with config entry
 	 */
 	public TimedEntities getWorldTimedGroup(World world, String name, boolean canCreate, boolean hasConfig) {
 		String groupName = getEntityGroupName(world, name);
@@ -328,11 +327,11 @@ public class TickDynamicMod {
 
 	/**
 	 * @param groupType
-	 * The type to make the new Group if it doesn't already exist. Will return existing group even if type doesn't match.
+	 * 		The type to make the new Group if it doesn't already exist. Will return existing group even if type doesn't match.
 	 * @param canCreate
-	 * Whether to create the group if it does not exist
+	 * 		Whether to create the group if it does not exist
 	 * @param hasConfig
-	 * Whether to create with config entry
+	 * 		Whether to create with config entry
 	 */
 	public EntityGroup getWorldEntityGroup(World world, String name, EntityType groupType, boolean canCreate, boolean hasConfig) {
 		String groupName = getEntityGroupName(world, name);
@@ -426,27 +425,27 @@ public class TickDynamicMod {
 	}
 
 	public static void logInfo(String log, Object... params) {
-		if(!nologs)
-		FMLLog.log(MODNAME, Level.INFO, log, params);
+		if (!nologs)
+			LOGGER.log(Level.INFO, log, params);
 	}
 
 	public static void logDebug(String log, Object... params) {
-		if(!nologs)
-		FMLLog.log(MODNAME, Level.DEBUG, log, params);
+		if (!nologs)
+			LOGGER.log(Level.DEBUG, log, params);
 	}
 
 	public static void logError(String log, Object... params) {
-		if(!nologs)
-		FMLLog.log(MODNAME, Level.ERROR, log, params);
+		if (!nologs)
+			LOGGER.log(Level.ERROR, log, params);
 	}
 
 	public static void logTrace(String log, Object... params) {
-		if(!nologs)
-		FMLLog.log(MODNAME, Level.TRACE, log, params);
+		if (!nologs)
+			LOGGER.log(Level.TRACE, log, params);
 	}
 
 	public static void logWarn(String log, Object... params) {
-		if(!nologs)
-		FMLLog.log(MODNAME, Level.WARN, log, params);
+		if (!nologs)
+			LOGGER.log(Level.WARN, log, params);
 	}
 }

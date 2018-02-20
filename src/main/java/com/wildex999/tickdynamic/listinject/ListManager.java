@@ -3,7 +3,6 @@ package com.wildex999.tickdynamic.listinject;
 import com.wildex999.tickdynamic.TickDynamicConfig;
 import com.wildex999.tickdynamic.TickDynamicMod;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.world.World;
 import net.minecraftforge.common.config.ConfigCategory;
@@ -13,7 +12,7 @@ import java.util.*;
 
 /*
  * Written by: Wildex999
- * 
+ *
  * Overrides ArrayList to act as an replacement for loadedEntityList and loadedTileEntityList.
  */
 
@@ -202,7 +201,7 @@ public class ListManager<T extends EntityObject> implements List<T> {
 		if (element.TD_entityGroup != null)
 			return false;
 		if (element.TD_selfTileEntity != null)
-			if(!(element.TD_selfTileEntity instanceof ITickable))
+			if (!(element.TD_selfTileEntity instanceof ITickable))
 				return false;//Don't add non-tickable tile entities
 
 		//TODO: Queue and add over time
@@ -252,13 +251,7 @@ public class ListManager<T extends EntityObject> implements List<T> {
 			return false;
 		}
 		EntityObject entityObject = (EntityObject) object;
-		if (entityObject.TD_entityGroup == null || entityObject.TD_entityGroup.list != this) {
-			//TickDynamicMod.logError("Contains check: " + object + " does not belong to list: " + this + " but instead " + (entityObject.TD_entityGroup == null ? "None" : entityObject.TD_entityGroup.list));
-			//Thread.dumpStack();
-			return false;
-		}
-
-		return true;
+		return entityObject.TD_entityGroup != null && entityObject.TD_entityGroup.list == this;
 	}
 
 	@Override
