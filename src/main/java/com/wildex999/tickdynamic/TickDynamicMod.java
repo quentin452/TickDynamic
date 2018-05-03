@@ -41,7 +41,7 @@ import java.util.concurrent.Semaphore;
  * - Entities and TileEntities grouped by owner(Player), and limits can be set per player.
  */
 
-@Mod(modid = TickDynamicMod.MODID, name = TickDynamicMod.MODNAME, version = TickDynamicMod.VERSION, updateJSON = "https://bitbucket.org/The_Fireplace/minecraft-mod-updates/raw/master/tickdynamic.json", acceptableRemoteVersions = "*", certificateFingerprint = "a93cd984e835238a9296066aff9aee15a202ec51")
+@Mod(modid = TickDynamicMod.MODID, name = TickDynamicMod.MODNAME, version = TickDynamicMod.VERSION, updateJSON = "https://bitbucket.org/The_Fireplace/minecraft-mod-updates/raw/master/tickdynamic.json", acceptableRemoteVersions = "*", certificateFingerprint = "fc6c96880539df54ba847abda8844dabfcef307e")
 public class TickDynamicMod {
 	public static final String MODID = "tickdynamic";
 	public static final String MODNAME = "Tick Dynamic";

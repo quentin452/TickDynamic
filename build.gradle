@@ -25,12 +25,12 @@ apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
 def signJar(archivePath) {
-    if (project.hasProperty("ksAlias") && project.hasProperty("ks") && project.hasProperty("ksPass")) {
+    if (project.hasProperty("keyStoreAlias") && project.hasProperty("keyStore") && project.hasProperty("keyStorePass")) {
         ant.signjar(
             jar:                  archivePath,
-            alias:                project.ksAlias,
-            keystore:             project.ks,
-            storepass:            project.ksPass,
+            alias:                project.keyStoreAlias,
+            keystore:             project.keyStore,
+            storepass:            project.keyStorePass,
             preservelastmodified: true
         )
     } else {
@@ -38,7 +38,7 @@ def signJar(archivePath) {
     }
 }
 
-version = "1.0.0"
+version = "1.0.1"
 group= "com.wildex999.tickdynamic"
 archivesBaseName = "TickDynamic-1.12.2"
 
