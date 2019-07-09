@@ -17,7 +17,7 @@ buildscript {
 }
 
 plugins {
-    id "com.matthewprenger.cursegradle" version "1.0.10"
+    id "com.matthewprenger.cursegradle" version "1.2.0"
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'net.cazzar.gradle.modsio'
@@ -38,7 +38,7 @@ def signJar(archivePath) {
     }
 }
 
-version = "1.0.1"
+version = "1.0.2"
 group= "com.wildex999.tickdynamic"
 archivesBaseName = "TickDynamic-1.12.2"
 

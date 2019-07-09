@@ -39,9 +39,9 @@ public class EntityIteratorTimed implements Iterator<EntityObject> {
 
 	@Override
 	public boolean hasNext() {
-		if (currentAge != list.age)
+		if (!ageMatches(list.age))
 			throw new ConcurrentModificationException("List modified before going to next entry.");
-		if (remainingCount > 0 && entityList.size() > 0)
+		if (remainingCount > 0 && !entityList.isEmpty())
 			return true;
 
 		//Find next group and end timer on current group
@@ -77,7 +77,7 @@ public class EntityIteratorTimed implements Iterator<EntityObject> {
 
 	@Override
 	public EntityObject next() {
-		if (currentAge != list.age)
+		if (!ageMatches(list.age))
 			throw new ConcurrentModificationException("List modified before going to next entry");
 		if (!hasNext()) //hasNext will also setup next group if necessary(Usually called before next anyway)
 			throw new NoSuchElementException();
@@ -101,7 +101,7 @@ public class EntityIteratorTimed implements Iterator<EntityObject> {
 
 	@Override
 	public void remove() {
-		if (currentAge != list.age)
+		if (!ageMatches(list.age))
 			throw new ConcurrentModificationException("List modified before going to next entry");
 		if (currentObject == null)
 			return;
@@ -120,4 +120,7 @@ public class EntityIteratorTimed implements Iterator<EntityObject> {
 			currentOffset = 0;
 	}
 
+	public boolean ageMatches(int age) {
+		return currentAge == age;
+	}
 }

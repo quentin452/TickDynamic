@@ -33,7 +33,7 @@ public class ListManagerEntities extends ListManager<EntityObject> {
 		}
 
 		//Verify we have a next element to move on to
-		if (!entityIterator.hasNext()) {
+		if (entityIterator instanceof EntityIteratorTimed && ((EntityIteratorTimed)entityIterator).ageMatches(this.age) && !entityIterator.hasNext()) {
 			updateStarted = false;
 			profiler.stage = CustomProfiler.Stage.InLoop; //Make sure were at the stage where we can continue to TileEntities
 			return 0; //Should end

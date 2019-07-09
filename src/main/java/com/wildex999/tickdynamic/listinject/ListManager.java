@@ -8,6 +8,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.config.ConfigCategory;
 import org.apache.commons.lang3.NotImplementedException;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 
 /*
@@ -246,10 +247,8 @@ public class ListManager<T extends EntityObject> implements List<T> {
 
 	@Override
 	public boolean contains(Object object) {
-		if (!(object instanceof EntityObject)) {
-			TickDynamicMod.logWarn("Trying to remove: " + object + " but not instanceof class EntityObject");
+		if (!(object instanceof EntityObject))
 			return false;
-		}
 		EntityObject entityObject = (EntityObject) object;
 		return entityObject.TD_entityGroup != null && entityObject.TD_entityGroup.list == this;
 	}
@@ -355,7 +354,7 @@ public class ListManager<T extends EntityObject> implements List<T> {
 	@Override
 	public boolean remove(Object object) {
 		if (!contains(object)) {
-			//TickDynamicMod.logWarn("Failed to remove: " + object + " as it does not exist in the list.");
+			TickDynamicMod.logWarn("Failed to remove: " + object + " as it does not exist in the list.");
 			return false;
 		}
 
@@ -423,8 +422,15 @@ public class ListManager<T extends EntityObject> implements List<T> {
 		return objects;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T[] toArray(T[] a) {
-		throw new NotImplementedException("toArray(T[]) is not implemented in TickDynamic's List implementation!");
+	@Nonnull
+	public <E> E[] toArray(E[] a) {
+		if (a.length < size())
+			return (E[]) Arrays.copyOf(toArray(), size(), a.getClass());
+		System.arraycopy(toArray(), 0, a, 0, size());
+		if (a.length > size())
+			a[size()] = null;
+		return a;
 	}
 }
