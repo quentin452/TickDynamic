@@ -1,5 +1,8 @@
 # eclipse
 bin
+*.launch
+.settings
+.metadata
 .classpath
 .project
 
@@ -17,5 +20,3 @@ build
 # other
 eclipse
 run
-runclient
-libs/*
