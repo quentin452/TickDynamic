@@ -130,7 +130,7 @@ public class TickDynamicMod {
 		externalTimed.setSliceMax(0);
 		root.addChild(externalTimed);
 
-		MinecraftForge.EVENT_BUS.register(new WorldEventHandler());
+		//MinecraftForge.EVENT_BUS.register(new WorldEventHandler());
 	}
 
 

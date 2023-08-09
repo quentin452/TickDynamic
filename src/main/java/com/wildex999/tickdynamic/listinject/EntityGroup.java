@@ -426,7 +426,7 @@ public class EntityGroup {
 		while (it.hasNext()) {
 			Map.Entry<Class<? extends Entity>, EntityRegistry.EntityRegistration> entry = it.next();
 			if (entry.getValue().getRegistryName().getPath().equalsIgnoreCase(name)) {
-				Class<? extends Entity> value = entry.getKey();
+				Class value = entry.getKey();
 				classList.add(value);
 			}
 		}
