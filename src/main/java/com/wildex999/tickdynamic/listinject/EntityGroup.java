@@ -425,7 +425,7 @@ public class EntityGroup {
 		Iterator<Map.Entry<Class<? extends Entity>, EntityRegistry.EntityRegistration>> it = (Iterator<Map.Entry<Class<? extends Entity>, EntityRegistry.EntityRegistration>>) entries.iterator();
 		while (it.hasNext()) {
 			Map.Entry<Class<? extends Entity>, EntityRegistry.EntityRegistration> entry = it.next();
-			if (entry.getValue().getRegistryName().getPath().equalsIgnoreCase(name)) {
+			if (entry.getValue().getRegistryName().getResourceDomain().equalsIgnoreCase(name)) {
 				Class value = entry.getKey();
 				classList.add(value);
 			}
@@ -443,7 +443,7 @@ public class EntityGroup {
 		Iterator<Map.Entry<ResourceLocation, Class>> it = (Iterator<Map.Entry<ResourceLocation, Class>>) entries.iterator();
 		while (it.hasNext()) {
 			Map.Entry<ResourceLocation, Class> entry = it.next();
-			if (entry.getKey().getPath().equalsIgnoreCase(name)) {
+			if (entry.getKey().getResourceDomain().equalsIgnoreCase(name)) {
 				Class value = entry.getValue();
 				classList.add(value);
 			}

@@ -77,26 +77,34 @@ public class EntityIteratorTimed implements Iterator<EntityObject> {
 
 	@Override
 	public EntityObject next() {
-		if (!ageMatches(list.age))
-			throw new ConcurrentModificationException("List modified before going to next entry");
-		if (!hasNext()) //hasNext will also setup next group if necessary(Usually called before next anyway)
-			throw new NoSuchElementException();
+		try {
+			if (!ageMatches(list.age)) {
+				throw new ConcurrentModificationException("List modified before going to next entry");
+			}
+			if (!hasNext()) {
+				throw new NoSuchElementException();
+			}
 
-		if (!startedTimer) {
-			startedTimer = true;
-			currentGroup.timedGroup.startTimer();
+			if (!startedTimer) {
+				startedTimer = true;
+				currentGroup.timedGroup.startTimer();
+			}
+
+			if (currentOffset >= entityList.size()) { //Loop around
+				currentOffset = 0;
+			}
+
+			currentObject = entityList.get(currentOffset);
+			remainingCount--;
+			currentOffset++;
+			updateCount++;
+
+			return currentObject;
+		} catch (NoSuchElementException e) {
+			// Handle the exception using println
+			System.out.println("NoSuchElementException occurred in EntityIteratorTimed: " + e.getMessage());
+			return null; // Or return a default EntityObject
 		}
-
-		if (currentOffset >= entityList.size()) { //Loop around
-			currentOffset = 0;
-		}
-
-		currentObject = entityList.get(currentOffset);
-		remainingCount--;
-		currentOffset++;
-		updateCount++;
-
-		return currentObject;
 	}
 
 	@Override
