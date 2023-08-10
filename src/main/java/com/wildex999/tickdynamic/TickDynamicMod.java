@@ -52,10 +52,7 @@ public class TickDynamicMod {
 	@Mod.Instance(MODID)
 	public static TickDynamicMod instance;
 
-	private static Logger LOGGER = FMLLog.getLogger();//initialize to FMLLog.getLogger in case it gets called before preinit.
-
-	public static boolean DEV_ENV = (Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
-	public static boolean VALID_JAR = true;
+	private static Logger LOGGER = FMLLog.getLogger();//initialize to FMLLog.getLogger in case it gets called before preinit
 
 	public Map<String, ITimed> timedObjects;
 	public Map<String, EntityGroup> entityGroups;
@@ -81,12 +78,6 @@ public class TickDynamicMod {
 	public float defaultEntityMinimumTime = 0;
 	public int defaultWorldSlicesMax = 100;
 	public int defaultAverageTicks = 20;
-
-	@Mod.EventHandler
-	public static final void onInvalidCertificate(FMLFingerprintViolationEvent event) {
-		if (!DEV_ENV)
-			VALID_JAR = false;
-	}
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -200,25 +191,6 @@ public class TickDynamicMod {
 				config.save();
 			}
 		}
-	}
-
-	@SubscribeEvent
-	public void clientJoinWorld(FMLNetworkEvent.ClientConnectedToServerEvent event) {
-		if (!VALID_JAR)
-			(new Thread(() -> {
-				while (FMLClientHandler.instance().getClientPlayerEntity() == null) {
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						logWarn(e.getMessage());
-					}
-				}
-
-				logDebug("Client with invalid jar is connecting: "
-						+ FMLClientHandler.instance().getClientPlayerEntity().getDisplayNameString());
-
-				FMLClientHandler.instance().getClientPlayerEntity().sendMessage(new TextComponentString("Warning: Your copy of " + MODNAME + " does not appear to be valid. Please click here and download a fresh copy. If you did download it from that link, please report this error on the issue tracker.").setStyle(new Style().setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://mods.curse.com/mc-mods/minecraft/269359-tick-dynamic#t1:other-downloads"))));
-			})).start();
 	}
 
 	/**
