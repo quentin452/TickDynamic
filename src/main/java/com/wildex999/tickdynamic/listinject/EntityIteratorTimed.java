@@ -96,6 +96,10 @@ public class EntityIteratorTimed implements Iterator<EntityObject> {
 				throw new NoSuchElementException("No valid entity list available.");
 			}
 
+			if (currentOffset >= entityList.size()) {
+				currentOffset = 0;
+			}
+
 			if (currentOffset < entityList.size()) {
 				currentObject = entityList.get(currentOffset);
 				remainingCount--;
