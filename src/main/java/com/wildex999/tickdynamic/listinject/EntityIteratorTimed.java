@@ -2,10 +2,7 @@ package com.wildex999.tickdynamic.listinject;
 
 import com.wildex999.tickdynamic.TickDynamicMod;
 
-import java.util.ConcurrentModificationException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 
 /*
@@ -35,16 +32,30 @@ public class EntityIteratorTimed implements Iterator<EntityObject> {
 		this.groupIterator = list.getGroupIterator();
 		this.remainingCount = 0;
 		this.startedTimer = false;
+		this.entityList = null;
+	}
+
+	private void handleConcurrentModification() {
+		TickDynamicMod.logDebug("Concurrent modification detected in age");
+	}
+
+	private void startTimerIfNeeded() {
+		if (!startedTimer) {
+			startedTimer = true;
+			currentGroup.timedGroup.startTimer();
+		}
 	}
 
 	@Override
 	public boolean hasNext() {
-		if (!ageMatches(list.age))
-			throw new ConcurrentModificationException("List modified before going to next entry.");
-		if (remainingCount > 0 && !entityList.isEmpty())
-			return true;
+		if (!ageMatches(list.age)) {
+			handleConcurrentModification();
+		}
 
-		//Find next group and end timer on current group
+		if (remainingCount > 0 && entityList != null && !entityList.isEmpty() && currentOffset < entityList.size()) {
+			return true;
+		}
+
 		if (startedTimer && currentGroup != null) {
 			currentGroup.timedGroup.endUpdateObjects(updateCount);
 			currentGroup.timedGroup.endTimer();
@@ -54,22 +65,22 @@ public class EntityIteratorTimed implements Iterator<EntityObject> {
 		currentGroup = null;
 		startedTimer = false;
 		entityList = null;
+
 		while (entityList == null) {
-			if (!groupIterator.hasNext())
+			if (!groupIterator.hasNext()) {
 				return false;
-			currentGroup = groupIterator.next();
-
-			entityList = currentGroup.entities;
-			if (entityList.size() <= 0) {
-				entityList = null;
-				continue;
 			}
+			currentGroup = groupIterator.next();
+			entityList = currentGroup.entities;
 
-			//currentOffset = 0;
-			//remainingCount = entityList.size();
-			currentOffset = currentGroup.timedGroup.startUpdateObjects();
-			remainingCount = currentGroup.timedGroup.getUpdateCount();
-			updateCount = 0;
+			if (entityList.isEmpty()) {
+				entityList = null;
+			} else {
+				currentOffset = currentGroup.timedGroup.startUpdateObjects();
+				remainingCount = currentGroup.timedGroup.getUpdateCount();
+				updateCount = 0;
+				startTimerIfNeeded();
+			}
 		}
 
 		return true;
@@ -77,55 +88,44 @@ public class EntityIteratorTimed implements Iterator<EntityObject> {
 
 	@Override
 	public EntityObject next() {
-		try {
 			if (!ageMatches(list.age)) {
-				throw new ConcurrentModificationException("List modified before going to next entry");
-			}
-			if (!hasNext()) {
-				throw new NoSuchElementException();
+				handleConcurrentModification();
 			}
 
-			if (!startedTimer) {
-				startedTimer = true;
-				currentGroup.timedGroup.startTimer();
+			if (entityList == null) {
+				throw new NoSuchElementException("No valid entity list available.");
 			}
 
-			if (currentOffset >= entityList.size()) { //Loop around
+			if (currentOffset >= entityList.size()) {
 				currentOffset = 0;
 			}
 
-			currentObject = entityList.get(currentOffset);
-			remainingCount--;
-			currentOffset++;
-			updateCount++;
-
-			return currentObject;
-		} catch (NoSuchElementException e) {
-			// Handle the exception using println
-			System.out.println("NoSuchElementException occurred in EntityIteratorTimed: " + e.getMessage());
-			return null; // Or return a default EntityObject
-		}
+			if (currentOffset < entityList.size()) {
+				currentObject = entityList.get(currentOffset);
+				remainingCount--;
+				currentOffset++;
+				updateCount++;
+				startTimerIfNeeded();
+				return currentObject;
+			} else {
+				throw new NoSuchElementException("Reached the end of the entity list.");
+			}
 	}
 
 	@Override
 	public void remove() {
-		if (!ageMatches(list.age))
-			throw new ConcurrentModificationException("List modified before going to next entry");
-		if (currentObject == null)
-			return;
+		if (currentObject != null) {
+			if (list.remove(currentObject)) {
+				currentAge++;
+				currentOffset--;
+			} else {
+				TickDynamicMod.logError("Failed to remove: " + currentObject + " from the loaded entity list!");
+			}
 
-		//Remove while maintaining the Iterator integrity and position
-		if (list.remove(currentObject)) {
-			currentAge++;
-			currentOffset--;
-		} else
-			TickDynamicMod.logError("Failed to remove: " + currentObject + " from loaded entity list!");
-
-		if (currentAge != list.age)
-			throw new RuntimeException("ASSERT FAILED: " + currentAge + " : " + list.age);
-
-		if (currentOffset < 0) //If we removed the first element
-			currentOffset = 0;
+			if (currentOffset < 0) {
+				currentOffset = 0;
+			}
+		}
 	}
 
 	public boolean ageMatches(int age) {
